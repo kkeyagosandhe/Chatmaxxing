@@ -1,0 +1,97 @@
+# Chatmaxxing — Results Log
+
+## Run 1 — Kaggle Single-Turn Data (Baseline)
+
+**Dataset:** `data/tickets_clean.csv` (Kaggle customer support tickets)
+**Tickets:** 30 before (range 500–529), 30 after (range 530–559)
+**Prompt rule added by fix proposer:** *"If a customer's problem description is vague or incomplete, you MUST ask for clarification."*
+
+| Phase | Failures |
+|-------|----------|
+| Before | 21/30 (70%) |
+| After | 22/30 (73%) |
+| Improvement | -1 (no improvement) |
+
+**Clusters identified:**
+- Agent assumed unspecified customer issue (8 tickets)
+- Context Drift & Ungrounded Generation (6 tickets)
+- Goal misidentification (7 tickets)
+
+**Key finding:** Agent picked `[NEED_MORE_INFO]` on essentially every ticket. Manual trace review revealed the data was single-turn — there was no conversation history for the agent to use. Asking for clarification on a first message is correct behavior, not failure. **The eval/data mismatch was the bottleneck, not the prompt or the agent.**
+
+---
+
+## Run 2 — Twitter Multi-Turn Data
+
+**Dataset:** `data/twitter_clean.csv` (1000 multi-turn conversations grouped from the Kaggle Customer Support on Twitter dataset, 4+ turns each)
+**Tickets:** 20 before (range 30–49), 20 after (range 50–69)
+**Prompt rule added by fix proposer:** *"Verify all factual statements against the provided context and adhere to established resolution processes."*
+
+| Phase | Failures |
+|-------|----------|
+| Before | 12/20 (60%) |
+| After | 11/20 (55%) |
+| Improvement | +1 fewer failure |
+
+**Clusters identified:**
+- Factual inaccuracy and process error (6 tickets)
+- Misunderstood primary customer intent (2 tickets)
+- Agent generated unapproved tag (4 tickets)
+
+**Key finding:** Multi-turn data gives the agent real context to work with. Clusters are noticeably more concrete (e.g. "agent generated unapproved tag" is a specific structural failure, not a vague intent issue). First positive improvement number observed in the project.
+
+---
+
+## Cross-Run Comparison
+
+| Metric | Kaggle (single-turn) | Twitter (multi-turn) |
+|--------|----------------------|----------------------|
+| Failure rate | 70% | 60% |
+| Disposition pattern | 100% `NEED_MORE_INFO` | Mixed dispositions |
+| Cluster specificity | Vague | Concrete |
+| Improvement signal | None / negative | Positive |
+
+**Implication:** The eval framework correctly surfaced that single-turn data is a poor fit for this methodology. Same code, different data = different result. This validates the framework's diagnostic value beyond just measuring agent quality.
+
+---
+
+## Next Steps
+
+- [ ] Scale Twitter run to 30 tickets per phase for stronger signal
+- [ ] Phase 2: Pydantic structured output (eliminates "unapproved tag" cluster entirely)
+- [ ] Phase 3: confidence-based routing
+- [ ] Build Streamlit dashboard
+- [ ] Record 3-minute demo
+- [ ] Devpost submission (deadline June 11, 2026)
+
+
+
+(.venv) keya.gaosandhegmail.com@Keyas-MacBook-Air chatmaxxing % python tests/run_test.py
+Clean conversations available: 1000 (removed 0 short/empty rows)
+
+=== EXPERIMENT: grounding gate OFF vs ON (same held-out tickets) ===
+
+Running WITHOUT grounding gate...
+
+--- GATE OFF (n=20) ---
+  Grounding failures:    1
+  Goal drift failures:   0
+  Disposition failures:  7
+  Any failure (total):   8/20
+
+Running WITH grounding gate...
+
+--- GATE ON (n=20) ---
+  Grounding failures:    0
+  Goal drift failures:   0
+  Disposition failures:  7
+  Any failure (total):   7/20
+  Gate interventions:    2 (ungrounded responses caught -> escalated)
+
+=== RESULT ===
+Grounding failures:  1 (gate off)  ->  0 (gate on)
+Total failures:      8 (gate off)  ->  7 (gate on)
+
+Note: the gate converts ungrounded (confidently wrong) responses into
+safe escalations. Grounding-class failures are reduced structurally;
+total count reflects that dangerous failures become safe hand-offs.
