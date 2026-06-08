@@ -7,6 +7,76 @@ import json
 import re
 from collections import Counter
 
+# Response length bounds from 5th/95th percentile of the ticket dataset.
+_RESPONSE_MIN_WORDS = 37
+_RESPONSE_MAX_WORDS = 201
+_VALID_DISPOSITIONS = {"RESOLVED", "ESCALATE", "NEED_MORE_INFO"}
+# Confidence is on a 0.0-1.0 scale (see AgentResponse prompt). High confidence
+# on a flagged ticket signals a pipeline inconsistency, not a confident correct
+# answer — anything above this threshold is flagged.
+_CONFIDENCE_FAILURE_THRESHOLD = 0.7
+
+
+def validate_schema(response: str, disposition: str, confidence: float, any_failure: bool) -> dict:
+    """
+    Deterministic cross-field checks. No LLM calls. Returns a dict of
+    violations found (empty dict = clean).
+    """
+    violations = {}
+
+    # 1. Confidence-failure agreement: high confidence on a flagged ticket is
+    #    a pipeline red flag, not evidence the response was correct.
+    if any_failure and confidence > _CONFIDENCE_FAILURE_THRESHOLD:
+        violations["confidence_failure_agreement"] = (
+            f"confidence={confidence} but ticket has failures — "
+            "high confidence on a flagged response signals a pipeline inconsistency"
+        )
+
+    # 2. Escalation coherence: an ESCALATE response should not assert the issue
+    #    is already resolved, and a RESOLVED response should not say it is being
+    #    handed off. Phrases (not bare words) to avoid benign false positives
+    #    like "once the specialist is done" or "feel free to follow up".
+    response_lower = response.lower()
+    if disposition == "ESCALATE" and re.search(
+        r"\b(issue is (now )?resolved|has been (resolved|fixed|solved)|problem is (now )?fixed|this is resolved)\b",
+        response_lower,
+    ):
+        violations["escalation_coherence"] = (
+            "disposition is ESCALATE but response asserts the issue is already resolved"
+        )
+    if disposition == "RESOLVED" and re.search(
+        r"\b(escalating (this|your)|routing (this|you) to|a specialist will|our team will (look|investigate|follow up))\b",
+        response_lower,
+    ):
+        violations["escalation_coherence"] = (
+            "disposition is RESOLVED but response says it is being escalated/handed off"
+        )
+
+    # 3. Response length bounds (data-driven: 5th/95th percentile).
+    word_count = len(response.split())
+    if word_count < _RESPONSE_MIN_WORDS and disposition != "ESCALATE":
+        violations["response_too_short"] = (
+            f"{word_count} words — below floor of {_RESPONSE_MIN_WORDS} "
+            "for a non-escalation response"
+        )
+    if word_count > _RESPONSE_MAX_WORDS:
+        violations["response_too_long"] = (
+            f"{word_count} words — above ceiling of {_RESPONSE_MAX_WORDS}"
+        )
+
+    # 4. Disposition must be from the closed enum (Pydantic enforces this at
+    #    parse time, but re-check here so the eval surface is self-contained).
+    if disposition not in _VALID_DISPOSITIONS:
+        violations["invalid_disposition"] = (
+            f"'{disposition}' is not a valid disposition"
+        )
+
+    return {
+        "violations": violations,
+        "passed": len(violations) == 0,
+        "violation_count": len(violations),
+    }
+
 load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -35,6 +105,7 @@ def _majority_vote(samples: list, flag_key: str) -> dict:
         "reason": reason,
         flag_key: majority_flag,
         "votes": f"{flags.count(majority_flag)}/{len(flags)}",
+        "uncertain": flags.count(True) == 1 or flags.count(False) == 1,
     }
 
 
@@ -115,23 +186,36 @@ Apply the rubric above. Reply with JSON only:
     return _vote(prompt, "wrong_disposition")
 
 
-def run_all_detectors(ticket_id: int, query: str, response: str, ticket_type: str, context: dict) -> dict:
+def run_all_detectors(
+    ticket_id: int,
+    query: str,
+    response: str,
+    ticket_type: str,
+    context: dict,
+    disposition: str = "UNKNOWN",
+    confidence: float = 0.0,
+) -> dict:
     with langfuse.start_as_current_observation(as_type="span", name="eval-run") as span:
 
         goal_drift = detect_goal_drift(query, response)
         hallucination = detect_hallucination(query, response, context)
-        disposition = detect_wrong_disposition(response, ticket_type)
+        wrong_disposition = detect_wrong_disposition(response, ticket_type)
+
+        any_failure = any([
+            goal_drift["drifted"],
+            hallucination["hallucinated"],
+            wrong_disposition["wrong_disposition"],
+        ])
+
+        schema = validate_schema(response, disposition, confidence, any_failure)
 
         results = {
             "ticket_id": ticket_id,
             "goal_drift": goal_drift,
             "hallucination": hallucination,
-            "wrong_disposition": disposition,
-            "any_failure": any([
-                goal_drift["drifted"],
-                hallucination["hallucinated"],
-                disposition["wrong_disposition"]
-            ])
+            "wrong_disposition": wrong_disposition,
+            "schema": schema,
+            "any_failure": any_failure or not schema["passed"],
         }
 
         span.update(

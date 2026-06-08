@@ -2,6 +2,7 @@ from google import genai
 from langfuse import get_client
 from dotenv import load_dotenv
 from safe_call import safe_generate
+from pydantic import BaseModel
 import os
 import json
 import re
@@ -11,46 +12,56 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 langfuse = get_client()
 
-def propose_fix(clusters: list) -> str:
-    with langfuse.start_as_current_observation(as_type="span", name="fix-proposer") as span:
 
-        cluster_summary = "\n".join([
-            f"- {c['root_cause']} (affects {c['count']} tickets): {c['fix']}"
-            for c in clusters
+class CaveatAnnotation(BaseModel):
+    cluster_label: str
+    ambiguity: str
+    human_llm_gap: str
+    reviewer_signal: str
+    needs_human_review: bool
+
+
+def generate_caveats(cluster_summaries: list) -> list[CaveatAnnotation]:
+    """
+    Takes cluster names + detector results, returns caveat annotations
+    instead of prompt patches. Surfaces ambiguity for human review.
+    """
+    with langfuse.start_as_current_observation(as_type="span", name="caveat-annotator") as span:
+
+        summary_lines = "\n".join([
+            f"- {c['root_cause']} (affects {c['count']} tickets, "
+            f"contains 2/3 split votes: {bool(c.get('has_uncertain'))})"
+            for c in cluster_summaries
         ])
 
-        prompt = f"""You are an AI agent prompt engineer.
+        prompt = f"""You are reviewing cases where an AI customer support detector flagged uncertainty.
 
-A customer support agent has the following recurring failure patterns:
+Failure clusters identified (each line states whether the cluster contains 2/3 split votes):
+{summary_lines}
 
-{cluster_summary}
+For each cluster, return a JSON object with:
+- cluster_label: short name for this failure pattern
+- ambiguity: what makes this case genuinely grey — not clearly right or wrong
+- human_llm_gap: why a human reviewer and an LLM evaluator might reach different conclusions here
+- reviewer_signal: one concrete thing a human should look for when reviewing this
+- needs_human_review: set this to exactly the "contains 2/3 split votes" value given for that cluster above
 
-The current agent prompt is:
-\"\"\"
-You are a customer support agent.
+Do NOT suggest prompt rules. Do NOT suggest fixes.
+Your job is to surface uncertainty, not eliminate it.
 
-Product: {{product}}
-Issue Type: {{ticket_type}}
-Subject: {{subject}}
-Description: {{description}}
-
-STRICT RULES:
-- Do NOT use any customer name unless explicitly stated in the Description
-- Do NOT assume the issue type beyond what is stated in the Description
-- Do NOT introduce any information not present in the Description
-- Only respond based on what the customer explicitly wrote
-
-Provide a clear, helpful response to resolve this customer's issue.
-End your response with exactly one of: [RESOLVED] [ESCALATE] [NEED_MORE_INFO]
-\"\"\"
-
-Return the current prompt above with ONE new rule added to the STRICT RULES section.
-The rule must directly address this failure pattern: {clusters[0]['root_cause']} — {clusters[0]['fix']}
-Do not rewrite, reorder, or remove anything else.
-Return only the improved prompt text, no explanation, no code blocks."""
+Return a JSON array of caveat objects, one per cluster, in the same order."""
 
         response = safe_generate(client, "gemini-2.5-flash", prompt)
 
-        improved_prompt = response.text.strip()
-        span.update(output=improved_prompt)
-        return improved_prompt
+        text = response.text.strip()
+        text = re.sub(r"```json|```", "", text).strip()
+        raw = json.loads(text)
+
+        # The split-vote flag is ground truth from the detectors — overwrite
+        # whatever the model returned so needs_human_review can't be hallucinated.
+        caveats = []
+        for item, cluster in zip(raw, cluster_summaries):
+            item["needs_human_review"] = bool(cluster.get("has_uncertain"))
+            caveats.append(CaveatAnnotation(**item))
+        span.update(output=str([c.model_dump() for c in caveats]))
+        return caveats

@@ -22,11 +22,16 @@ def run_eval(use_grounding_gate=False, start=0, end=10):
             response=agent_out["response"],
             ticket_type=agent_out["ticket_type"],
             context=agent_out["context"],
+            disposition=agent_out["disposition"],
+            confidence=agent_out["confidence"],
         )
         results.append({
             "eval": eval_result,
             "gate_triggered": agent_out["gate_triggered"],
             "disposition": agent_out["disposition"],
+            "confidence": agent_out["confidence"],
+            "query": agent_out["query"],
+            "response": agent_out["response"],
         })
     return results
 
@@ -39,18 +44,21 @@ def summarize(results, label):
     any_fail = sum(1 for r in results if r["eval"]["any_failure"])
     gate_hits = sum(1 for r in results if r["gate_triggered"])
 
+    schema_fails = sum(1 for r in results if not r["eval"]["schema"]["passed"])
+
     print(f"\n--- {label} (n={n}) ---")
     print(f"  Grounding failures:    {grounding}")
     print(f"  Goal drift failures:   {goal_drift}")
     print(f"  Disposition failures:  {disposition}")
+    print(f"  Schema violations:     {schema_fails}")
     print(f"  Any failure (total):   {any_fail}/{n}")
     if gate_hits:
         print(f"  Gate interventions:    {gate_hits} (ungrounded responses caught -> escalated)")
-    return {"grounding": grounding, "any": any_fail}
+    return {"grounding": grounding, "any": any_fail, "schema": schema_fails}
 
 
 # Held-out test set — same tickets scored both ways
-TEST_START, TEST_END = 425, 445
+TEST_START, TEST_END = 525, 555
 
 print("\n=== EXPERIMENT: grounding gate OFF vs ON (same held-out tickets) ===")
 
@@ -69,3 +77,65 @@ print(f"Total failures:      {summary_off['any']} (gate off)  ->  {summary_on['a
 print("\nNote: the gate converts ungrounded (confidently wrong) responses into")
 print("safe escalations. Grounding-class failures are reduced structurally;")
 print("total count reflects that dangerous failures become safe hand-offs.")
+
+from eval.fix_proposer import generate_caveats
+from eval.clustering import cluster_failures
+
+# Caveats run on gate-OFF results: the unfiltered agent behavior, before the
+# gate converts some failures into escalations.
+all_results = [r["eval"] for r in results_off]
+clusters = cluster_failures(all_results)
+caveats = generate_caveats(clusters)
+
+print("\n=== CAVEAT ANNOTATIONS ===\n")
+for c in caveats:
+    print(f"Pattern: {c.cluster_label}")
+    print(f"  Ambiguity:           {c.ambiguity}")
+    print(f"  Human/LLM gap:       {c.human_llm_gap}")
+    print(f"  Reviewer should:     {c.reviewer_signal}")
+    print(f"  Human review needed: {c.needs_human_review}")
+    print()
+
+
+# --- Per-pattern breakdown: which failure types the gate actually fixes ---
+# Clusters are built from gate-OFF failures (each carries its ticket ids).
+# For each pattern we count how many of those same tickets STILL fail under
+# the gate, so the reduction is attributable to a specific failure class.
+on_failed_ids = {r["eval"]["ticket_id"] for r in results_on if r["eval"]["any_failure"]}
+
+print("=== FAILURE BREAKDOWN (by pattern) ===\n")
+for cl in clusters:
+    off_count = cl["count"]
+    on_count = sum(1 for tid in cl["tickets"] if tid in on_failed_ids)
+    if on_count < off_count:
+        tag = f"(FIXED {off_count - on_count}/{off_count} by gate)"
+    elif on_count == off_count:
+        tag = "(unchanged)"
+    else:
+        tag = "(worse)"
+    print(f"  {cl['root_cause']}: {off_count} -> {on_count} cases {tag}")
+print()
+
+
+# --- Side-by-side ticket examples: the demo-facing evidence ---
+# Show tickets the gate actually intervened on (gate-off failure vs gate-on safe
+# escalation), so a reviewer can read the real before/after, not just metrics.
+def first_line(text, limit=240):
+    line = " ".join(text.split())
+    return line[:limit] + ("..." if len(line) > limit else "")
+
+off_by_id = {r["eval"]["ticket_id"]: r for r in results_off}
+intervened = [r for r in results_on if r["gate_triggered"]]
+
+print("=== SIDE-BY-SIDE EXAMPLES (gate interventions) ===\n")
+if not intervened:
+    print("  No gate interventions in this sample.\n")
+for r in intervened[:3]:
+    tid = r["eval"]["ticket_id"]
+    off = off_by_id.get(tid)
+    print(f"Ticket #{tid}")
+    print(f"  Customer:        {first_line(r['query'])}")
+    if off:
+        print(f"  GATE OFF ->  {first_line(off['response'])}")
+    print(f"  GATE ON  ->  {first_line(r['response'])}")
+    print()
