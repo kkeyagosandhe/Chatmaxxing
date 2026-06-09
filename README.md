@@ -14,59 +14,93 @@ An eval pipeline for AI customer support agents. Detects factual errors, off-top
 
 ---
 
-## Setup
+## Before you start — what you need
 
-### 1. Clone and install
+- **Python 3.11 or newer** — check by running `python --version` in your terminal. If you don't have it, download it from [python.org](https://python.org).
+- **uv** — a fast Python package manager. Install it by running:
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **A Gemini API key** — you have two options:
+  - **Option 1 (simpler):** Get a free key at [aistudio.google.com](https://aistudio.google.com). Click "Get API key", create one, and copy it. Add it to `.env` as `GEMINI_API_KEY=your_key`.
+  - **Option 2 (if you have GCP credits):** Use Google Cloud Vertex AI. You will need a GCP project with Vertex AI enabled, and to run `gcloud auth application-default login` on your machine. Add `GOOGLE_CLOUD_PROJECT=your_project_id` to `.env` and update the client initialization in each file to `genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")`.
+- **A Langfuse account (optional)** — for tracing. Free at [langfuse.com](https://langfuse.com). If you skip this, the pipeline still works but won't record traces.
+
+---
+
+## Step-by-step setup
+
+### Step 1 — Clone the repo
+
+Open your terminal and run:
 
 ```bash
-git clone <your-repo-url>
-cd chatmaxxing
+git clone https://github.com/kkeyagosandhe/Chatmaxxing.git
+cd Chatmaxxing
+```
+
+### Step 2 — Install dependencies
+
+```bash
 uv pip install -r requirements.txt
 uv pip install mcp streamlit
 ```
 
-### 2. Add your API keys
+This installs everything the project needs. It may take a minute.
 
-Create a `.env` file in the project root:
+### Step 3 — Create your `.env` file
+
+In the `Chatmaxxing` folder, create a new file called `.env` (note the dot at the start). Open it in any text editor and paste this in:
 
 ```
-GEMINI_API_KEY=your_gemini_api_key_here
-LANGFUSE_SECRET_KEY=your_langfuse_secret_key
-LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
+GEMINI_API_KEY=paste_your_gemini_key_here
+LANGFUSE_SECRET_KEY=paste_your_langfuse_secret_key_here
+LANGFUSE_PUBLIC_KEY=paste_your_langfuse_public_key_here
 LANGFUSE_BASE_URL=https://cloud.langfuse.com
 ```
 
-Get a Gemini API key at [aistudio.google.com](https://aistudio.google.com).  
-Langfuse is optional — it records traces. Sign up at [langfuse.com](https://langfuse.com) or remove the langfuse calls if you don't need tracing.
+Replace the placeholder values with your actual keys. If you are skipping Langfuse, you can leave those three lines out entirely.
 
-### 3. Add your ticket data
+### Step 4 — Add your ticket data
 
-Place your CSV at `data/twitter_clean.csv`. The pipeline expects a column called `Ticket Description`.
+Place your support ticket CSV file at `data/twitter_clean.csv`. The file must have a column called `Ticket Description`. If you are using a different CSV, make sure that column name matches.
+
+### Step 5 — You are ready
+
+Pick one of the two ways to use this tool below.
 
 ---
 
-## Running the dashboard
+## Option A — Visual dashboard (Streamlit)
+
+Run this command:
 
 ```bash
 uv run streamlit run dashboard/app.py
 ```
 
-Open [http://localhost:8501](http://localhost:8501), set a ticket range, and click **Run analysis**.
+Your browser will open automatically at [http://localhost:8501](http://localhost:8501).
+
+**How to use it:**
+1. Use the slider or the "From" / "To" boxes in the left sidebar to pick a ticket range (start small, e.g. 425 to 430, to test it out)
+2. Click **Run analysis**
+3. Wait for the pipeline to finish — it makes several AI calls per ticket so it takes a moment
+4. The results appear on screen: a summary of issues at the top, and a list of tickets below
+5. Click on any ticket row to expand it and see the full breakdown
 
 ---
 
-## Running as an MCP server
+## Option B — MCP server (for use inside Claude Desktop or Cursor)
 
-The MCP server exposes two tools that any MCP-compatible client (Claude Desktop, Claude Code) can call:
-
-| Tool | What it does |
-|------|-------------|
-| `run_eval(start, end)` | Runs the full pipeline on a ticket range and returns a summary |
-| `get_ticket_detail(ticket_id)` | Returns the full breakdown for a specific ticket from the last run |
+This lets you run the eval pipeline directly from a chat window — just describe what you want in plain English.
 
 ### Connect to Claude Desktop
 
-Add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+1. Open this file on your computer (create it if it does not exist):
+   - **Mac:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+2. Paste this into the file, replacing the path with the actual location of your Chatmaxxing folder:
 
 ```json
 {
@@ -74,26 +108,34 @@ Add this to your Claude Desktop config (`~/Library/Application Support/Claude/cl
     "chatmaxxing": {
       "command": "uv",
       "args": ["run", "python", "mcp_server.py"],
-      "cwd": "/absolute/path/to/chatmaxxing"
+      "cwd": "/absolute/path/to/Chatmaxxing"
     }
   }
 }
 ```
 
-Replace `/absolute/path/to/chatmaxxing` with the actual path on your machine.
+3. Restart Claude Desktop. You should now see Chatmaxxing listed as a connected tool.
 
-### Connect to Claude Code
+### Connect to Cursor
+
+1. Open Cursor settings → MCP
+2. Add a new server with:
+   - **Name:** `chatmaxxing`
+   - **Command:** `uv run python /absolute/path/to/Chatmaxxing/mcp_server.py`
+
+### Connect to Claude Code (terminal)
 
 ```bash
-claude mcp add chatmaxxing -- uv run python /absolute/path/to/chatmaxxing/mcp_server.py
+claude mcp add chatmaxxing -- uv run python /absolute/path/to/Chatmaxxing/mcp_server.py
 ```
 
-### Example usage in Claude
+### What you can say once connected
 
-Once connected, you can say:
 - *"Run eval on tickets 425 to 445"*
 - *"Show me the full breakdown for ticket 6969"*
 - *"Which tickets need human review?"*
+
+The MCP server uses your own `GEMINI_API_KEY` from the `.env` file. You are never charged for anyone else's usage.
 
 ---
 
@@ -114,7 +156,7 @@ eval/clustering.py      ← TF-IDF + KMeans failure clustering
     ▼
 eval/fix_proposer.py    ← caveat annotations (ambiguity, human/LLM gap, review signal)
     │
-    ├── dashboard/app.py     ← Streamlit UI
+    ├── dashboard/app.py     ← Streamlit dashboard
     └── mcp_server.py        ← MCP tools
 ```
 
@@ -124,6 +166,6 @@ eval/fix_proposer.py    ← caveat annotations (ambiguity, human/LLM gap, review
 
 **3-vote majority voting** — each detector calls Gemini 3 times and takes the majority. A 2/3 split sets `uncertain=True`, which propagates into the caveat layer. This surfaces cases where even the judge is unsure, instead of hiding the uncertainty behind a single verdict.
 
-**Deterministic schema validator** — runs without any LLM calls. Checks escalation coherence (ESCALATE disposition must not contain resolution language), response length bounds, and disposition enum validity.
+**Deterministic schema validator** — runs without any LLM calls. Checks escalation coherence (an ESCALATE response must not assert the issue is resolved), response length bounds, and disposition enum validity.
 
-**Caveat annotations instead of auto-fixes** — the pipeline deliberately does not suggest prompt patches. It surfaces *why* a failure is ambiguous and routes it to a human. This is the right call for cases where the rubric itself is contested.
+**Caveat annotations instead of auto-fixes** — the pipeline deliberately does not suggest prompt patches. It surfaces why a failure is ambiguous and routes it to a human. This is the right call for cases where the rubric itself is contested.
