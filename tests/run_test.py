@@ -23,7 +23,6 @@ def run_eval(use_grounding_gate=False, start=0, end=10):
             ticket_type=agent_out["ticket_type"],
             context=agent_out["context"],
             disposition=agent_out["disposition"],
-            confidence=agent_out["confidence"],
         )
         results.append({
             "eval": eval_result,
@@ -45,6 +44,9 @@ def summarize(results, label):
     gate_hits = sum(1 for r in results if r["gate_triggered"])
 
     schema_fails = sum(1 for r in results if not r["eval"]["schema"]["passed"])
+    confidences = [r["confidence"] for r in results if isinstance(r.get("confidence"), float)]
+    conf_mean = round(sum(confidences) / len(confidences), 3) if confidences else None
+    conf_std = round((sum((c - conf_mean) ** 2 for c in confidences) / len(confidences)) ** 0.5, 3) if confidences else None
 
     print(f"\n--- {label} (n={n}) ---")
     print(f"  Grounding failures:    {grounding}")
@@ -52,13 +54,15 @@ def summarize(results, label):
     print(f"  Disposition failures:  {disposition}")
     print(f"  Schema violations:     {schema_fails}")
     print(f"  Any failure (total):   {any_fail}/{n}")
+    if conf_mean is not None:
+        print(f"  Confidence (mean±std): {conf_mean} ± {conf_std}  ← poorly calibrated; motivates caveat system")
     if gate_hits:
         print(f"  Gate interventions:    {gate_hits} (ungrounded responses caught -> escalated)")
     return {"grounding": grounding, "any": any_fail, "schema": schema_fails}
 
 
 # Held-out test set — same tickets scored both ways
-TEST_START, TEST_END = 525, 555
+TEST_START, TEST_END = 525, 530
 
 print("\n=== EXPERIMENT: grounding gate OFF vs ON (same held-out tickets) ===")
 

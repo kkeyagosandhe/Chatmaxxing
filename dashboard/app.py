@@ -3,10 +3,8 @@ sys.path.append(".")
 
 import streamlit as st
 import pandas as pd
-import json
-import os
 
-st.set_page_config(page_title="Chatmaxxing Eval", layout="wide")
+st.set_page_config(page_title="AI Agent Quality & Performance Hub", layout="wide")
 
 # ---------------------------------------------------------------------------
 # Session state defaults
@@ -40,22 +38,7 @@ def failure_tags(r: dict) -> list[str]:
     return tags
 
 
-def ticket_row(r: dict) -> dict:
-    tags = failure_tags(r)
-    ev = r["eval"]
-    return {
-        "ticket_id": ev["ticket_id"],
-        "disposition": r["disposition"],
-        "confidence": r.get("confidence", "—"),
-        "failures": ", ".join(tags) if tags else "✓ Clean",
-        "schema_violations": ev["schema"]["violation_count"],
-        "flagged": "⚑" if ev["ticket_id"] in st.session_state.flagged_ids else "",
-        "_result": r,
-    }
-
-
 def caveat_for_ticket(ticket_id, clusters, caveats):
-    """Return the caveat annotation for the cluster this ticket belongs to."""
     if not clusters or not caveats:
         return None
     for i, cl in enumerate(clusters):
@@ -76,7 +59,7 @@ def run_pipeline(start: int, end: int):
     df = df[df["Ticket Description"].str.len() > 100].reset_index(drop=True)
 
     results = []
-    progress = st.progress(0, text="Running eval pipeline...")
+    progress = st.progress(0, text="Analysing tickets…")
     total = end - start
 
     for idx, i in enumerate(range(start, end)):
@@ -89,7 +72,6 @@ def run_pipeline(start: int, end: int):
             ticket_type=agent_out["ticket_type"],
             context=agent_out["context"],
             disposition=agent_out["disposition"],
-            confidence=agent_out["confidence"],
         )
         results.append({
             "eval": eval_result,
@@ -99,7 +81,7 @@ def run_pipeline(start: int, end: int):
             "query": agent_out["query"],
             "response": agent_out["response"],
         })
-        progress.progress((idx + 1) / total, text=f"Ticket {idx + 1}/{total}...")
+        progress.progress((idx + 1) / total, text=f"Ticket {idx + 1} of {total}…")
 
     progress.empty()
 
@@ -111,28 +93,36 @@ def run_pipeline(start: int, end: int):
 
 
 # ---------------------------------------------------------------------------
-# Sidebar: run controls
+# Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.title("Chatmaxxing")
-    st.caption("AI support agent eval dashboard")
+    st.caption("AI Agent Quality & Performance Hub")
     st.divider()
 
-    st.subheader("Run eval")
+    st.subheader("Select ticket range")
+    ticket_range = st.slider(
+        "Ticket range",
+        min_value=0,
+        max_value=999,
+        value=(425, 445),
+        label_visibility="collapsed",
+    )
     col1, col2 = st.columns(2)
     with col1:
-        start_idx = st.number_input("Start", min_value=0, max_value=990, value=425, step=1)
+        start_idx = st.number_input("From", min_value=0, max_value=999, value=ticket_range[0], step=1)
     with col2:
-        end_idx = st.number_input("End", min_value=1, max_value=1000, value=445, step=1)
+        end_idx = st.number_input("To", min_value=1, max_value=1000, value=ticket_range[1], step=1)
+    st.caption(f"{end_idx - start_idx} tickets selected")
 
-    if st.button("▶ Run pipeline", use_container_width=True, type="primary"):
+    if st.button("▶ Run analysis", use_container_width=True, type="primary"):
         with st.spinner("Running…"):
-            results, clusters, caveats = run_pipeline(int(start_idx), int(end_idx))
+            results, clusters, caveats = run_pipeline(start_idx, end_idx)
             st.session_state.results = results
             st.session_state.clusters = clusters
             st.session_state.caveats = caveats
             st.session_state.selected_ticket = None
-        st.success(f"Done — {len(results)} tickets evaluated")
+        st.success(f"Done — {len(results)} tickets analysed")
 
     st.divider()
     if st.session_state.flagged_ids:
@@ -148,8 +138,8 @@ with st.sidebar:
 # No data yet
 # ---------------------------------------------------------------------------
 if st.session_state.results is None:
-    st.title("Chatmaxxing Eval")
-    st.info("Configure a ticket range in the sidebar and click **Run pipeline** to start.")
+    st.title("AI Agent Quality & Performance Hub")
+    st.info("Select a ticket range in the sidebar and click **Run analysis** to get started.")
     st.stop()
 
 results = st.session_state.results
@@ -158,139 +148,175 @@ caveats = st.session_state.caveats
 n = len(results)
 
 # ---------------------------------------------------------------------------
-# Screen 1: Metrics overview
+# Metrics overview
 # ---------------------------------------------------------------------------
-st.title("Eval results")
+st.title("AI Agent Quality & Performance Hub")
 
 grounding = sum(1 for r in results if r["eval"]["hallucination"]["hallucinated"])
-goal_drift = sum(1 for r in results if r["eval"]["goal_drift"]["drifted"])
-disposition = sum(1 for r in results if r["eval"]["wrong_disposition"]["wrong_disposition"])
+disposition_err = sum(1 for r in results if r["eval"]["wrong_disposition"]["wrong_disposition"])
 schema_fails = sum(1 for r in results if not r["eval"]["schema"]["passed"])
 any_fail = sum(1 for r in results if r["eval"]["any_failure"])
-caveat_flagged = sum(
-    1 for r in results
-    if caveat_for_ticket(r["eval"]["ticket_id"], clusters, caveats) is not None
-    and getattr(caveat_for_ticket(r["eval"]["ticket_id"], clusters, caveats), "needs_human_review", False)
-)
+
+caveat_map = {}
+for r in results:
+    tid = r["eval"]["ticket_id"]
+    c = caveat_for_ticket(tid, clusters, caveats)
+    if c is not None:
+        caveat_map[tid] = c
+
+needs_review = sum(1 for c in caveat_map.values() if getattr(c, "needs_human_review", False))
+
+confidences = [r["confidence"] for r in results if isinstance(r.get("confidence"), float)]
+conf_mean = round(sum(confidences) / len(confidences), 2) if confidences else None
 
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Grounding failures", grounding, delta=None)
-m2.metric("Disposition errors", disposition, delta=None)
-m3.metric("Schema violations", schema_fails, delta=None)
-m4.metric("Needs human review", caveat_flagged, delta=None)
+m1.metric("Inaccurate responses", grounding, help="Agent responses that introduced facts not present in the conversation")
+m2.metric("Incorrect outcomes", disposition_err, help="Cases where the agent chose the wrong resolution type")
+m3.metric("Format issues", schema_fails, help="Responses that violated structural rules")
+m4.metric("Needs human review", needs_review, help="Cases where automated checks were inconclusive")
 
-st.caption(f"n={n} tickets  ·  {any_fail} total failures  ·  {n - any_fail} clean")
+st.caption(f"{n} tickets analysed  ·  {any_fail} issues found  ·  {n - any_fail} clean")
+if conf_mean is not None:
+    st.caption(
+        f"⚠ Note: the agent rated itself {conf_mean:.0%} confident on average — including on tickets where it made errors. "
+        "Confidence scores alone are not a reliable quality signal; use the issue flags and review markers below instead."
+    )
 st.divider()
 
 # ---------------------------------------------------------------------------
-# Screen 2: Ticket table with filters
+# Ticket table
 # ---------------------------------------------------------------------------
-st.subheader("Tickets")
+st.subheader("Ticket breakdown")
 
 all_failure_types = ["Grounding", "Goal Drift", "Disposition", "Schema"]
 filter_col, _, search_col = st.columns([2, 1, 3])
 with filter_col:
-    filter_type = st.multiselect("Filter by failure type", all_failure_types, placeholder="All tickets")
+    filter_type = st.multiselect("Filter by issue type", all_failure_types, placeholder="Show all tickets")
 with search_col:
-    search_query = st.text_input("Search customer message", placeholder="e.g. billing, refund…")
+    search_query = st.text_input("Search by customer message", placeholder="e.g. billing, refund, account…")
 
-rows = [ticket_row(r) for r in results]
-
+# Build filtered list
+filtered = results
 if filter_type:
-    rows = [r for r in rows if any(ft in r["failures"] for ft in filter_type)]
+    filtered = [r for r in filtered if any(ft in failure_tags(r) for ft in filter_type)]
 if search_query:
     sq = search_query.lower()
-    rows = [r for r in rows if sq in r["_result"]["query"].lower()]
+    filtered = [r for r in filtered if sq in r["query"].lower()]
 
-if not rows:
+if not filtered:
     st.warning("No tickets match the current filters.")
 else:
-    header = st.columns([1, 2, 2, 3, 1, 1])
-    header[0].markdown("**ID**")
-    header[1].markdown("**Disposition**")
-    header[2].markdown("**Confidence**")
-    header[3].markdown("**Failures**")
-    header[4].markdown("**Schema**")
-    header[5].markdown("**⚑**")
-
-    for row in rows:
-        tid = row["ticket_id"]
-        cols = st.columns([1, 2, 2, 3, 1, 1])
-        if cols[0].button(str(tid), key=f"select_{tid}", use_container_width=True):
-            st.session_state.selected_ticket = tid
-            st.rerun()
-        cols[1].write(row["disposition"])
-        cols[2].write(f"{row['confidence']:.2f}" if isinstance(row["confidence"], float) else row["confidence"])
-        if row["failures"] == "✓ Clean":
-            cols[3].success("✓ Clean")
+    # Build display dataframe
+    rows = []
+    for r in filtered:
+        tags = failure_tags(r)
+        ev = r["eval"]
+        tid = ev["ticket_id"]
+        if tags:
+            status_md = "✗ " + ", ".join(tags)
         else:
-            cols[3].error(row["failures"])
-        cols[4].write(f"{row['schema_violations']} violation(s)" if row["schema_violations"] else "✓")
-        flag_label = "⚑ unflag" if tid in st.session_state.flagged_ids else "⚑ flag"
-        if cols[5].button(flag_label, key=f"flag_{tid}"):
-            if tid in st.session_state.flagged_ids:
-                st.session_state.flagged_ids.discard(tid)
-            else:
-                st.session_state.flagged_ids.add(tid)
-            st.rerun()
+            status_md = "✓ Clean"
+        rows.append({
+            "Ticket ID": str(tid),
+            "Outcome": r["disposition"],
+            "Confidence": f"{r['confidence']:.0%}" if isinstance(r.get("confidence"), float) else "—",
+            "Issues Found": status_md,
+            "Flagged": "⚑" if tid in st.session_state.flagged_ids else "",
+        })
 
-# ---------------------------------------------------------------------------
-# Screen 3: Drill-down
-# ---------------------------------------------------------------------------
-if st.session_state.selected_ticket is not None:
-    st.divider()
-    tid = st.session_state.selected_ticket
-    match = next((r for r in results if r["eval"]["ticket_id"] == tid), None)
+    df_display = pd.DataFrame(rows)
+    st.dataframe(
+        df_display,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Ticket ID": st.column_config.TextColumn(width="small"),
+            "Outcome": st.column_config.TextColumn(width="small"),
+            "Confidence": st.column_config.TextColumn(width="small"),
+            "Issues Found": st.column_config.TextColumn(width="large"),
+            "Flagged": st.column_config.TextColumn(width="small"),
+        },
+    )
 
-    if match:
-        st.subheader(f"Ticket #{tid}")
+    st.caption("Click a ticket below to inspect it in detail.")
 
-        left, right = st.columns(2)
+    # Inline expanders — one per ticket, opens in place
+    for r in filtered:
+        ev = r["eval"]
+        tid = ev["ticket_id"]
+        tags = failure_tags(r)
+        label = f"{'✗' if tags else '✓'} Ticket #{tid} — {r['disposition']}"
+        if tags:
+            label += f"  ·  {', '.join(tags)}"
 
-        with left:
-            st.markdown("**Customer message**")
-            st.text_area("", value=match["query"], height=180, disabled=True, key="query_area")
+        with st.expander(label):
+            left, right = st.columns(2)
 
-            st.markdown("**Agent response**")
-            st.text_area("", value=match["response"], height=180, disabled=True, key="response_area")
+            with left:
+                st.markdown("**What the customer said**")
+                st.text_area(
+                    "Customer message",
+                    value=r["query"],
+                    height=160,
+                    disabled=True,
+                    label_visibility="collapsed",
+                    key=f"query_{tid}",
+                )
+                st.markdown("**What the agent replied**")
+                st.text_area(
+                    "Agent response",
+                    value=r["response"],
+                    height=160,
+                    disabled=True,
+                    label_visibility="collapsed",
+                    key=f"response_{tid}",
+                )
 
-        with right:
-            st.markdown("**Detector results**")
-            ev = match["eval"]
+            with right:
+                st.markdown("**Quality checks**")
 
-            def status(flag): return "❌" if flag else "✅"
+                def _row(label, failed, reason):
+                    icon = "✗" if failed else "✓"
+                    st.markdown(f"{icon} **{label}** — {reason}")
 
-            st.write(f"{status(ev['hallucination']['hallucinated'])} **Grounding** — {ev['hallucination'].get('reason','')}")
-            st.write(f"{status(ev['goal_drift']['drifted'])} **Goal drift** — {ev['goal_drift'].get('reason','')}")
-            st.write(f"{status(ev['wrong_disposition']['wrong_disposition'])} **Disposition** — {ev['wrong_disposition'].get('reason','')}")
+                _row(
+                    "Factual accuracy",
+                    ev["hallucination"]["hallucinated"],
+                    ev["hallucination"].get("reason", ""),
+                )
+                _row(
+                    "Stayed on topic",
+                    ev["goal_drift"]["drifted"],
+                    ev["goal_drift"].get("reason", ""),
+                )
+                _row(
+                    "Correct outcome",
+                    ev["wrong_disposition"]["wrong_disposition"],
+                    ev["wrong_disposition"].get("reason", ""),
+                )
 
-            schema = ev["schema"]
-            if schema["passed"]:
-                st.write("✅ **Schema** — all checks passed")
-            else:
-                for check, msg in schema["violations"].items():
-                    st.write(f"❌ **Schema / {check}** — {msg}")
+                schema = ev["schema"]
+                if schema["passed"]:
+                    st.markdown("✓ **Format** — all checks passed")
+                else:
+                    for check, msg in schema["violations"].items():
+                        st.markdown(f"✗ **Format / {check}** — {msg}")
 
-            st.divider()
-            st.markdown("**Caveat annotation**")
-            caveat = caveat_for_ticket(tid, clusters, caveats)
-            if caveat:
-                st.markdown(f"**Pattern:** {caveat.cluster_label}")
-                st.markdown(f"**Ambiguity:** {caveat.ambiguity}")
-                st.markdown(f"**Human/LLM gap:** {caveat.human_llm_gap}")
-                st.markdown(f"**Reviewer should:** {caveat.reviewer_signal}")
-                review_badge = "🔴 Yes" if caveat.needs_human_review else "🟢 No"
-                st.markdown(f"**Human review needed:** {review_badge}")
-            else:
-                st.caption("No caveat annotation for this ticket.")
+                caveat = caveat_map.get(tid)
+                if caveat:
+                    st.divider()
+                    st.markdown("**Why this case is ambiguous**")
+                    st.markdown(f"**Pattern:** {caveat.cluster_label}")
+                    st.markdown(f"**What makes it grey:** {caveat.ambiguity}")
+                    st.markdown(f"**Where humans and AI disagree:** {caveat.human_llm_gap}")
+                    st.markdown(f"**What a reviewer should check:** {caveat.reviewer_signal}")
+                    review_badge = "✓ Yes — needed" if caveat.needs_human_review else "✗ Not needed"
+                    st.markdown(f"**Human review needed:** {review_badge}")
 
-        if st.button("⚑ Flag for review" if tid not in st.session_state.flagged_ids else "⚑ Unflag", key="drill_flag"):
-            if tid in st.session_state.flagged_ids:
-                st.session_state.flagged_ids.discard(tid)
-            else:
-                st.session_state.flagged_ids.add(tid)
-            st.rerun()
-
-        if st.button("✕ Close", key="close_drill"):
-            st.session_state.selected_ticket = None
-            st.rerun()
+            flag_label = "⚑ Remove review flag" if tid in st.session_state.flagged_ids else "⚑ Flag for human review"
+            if st.button(flag_label, key=f"flag_{tid}"):
+                if tid in st.session_state.flagged_ids:
+                    st.session_state.flagged_ids.discard(tid)
+                else:
+                    st.session_state.flagged_ids.add(tid)
+                st.rerun()

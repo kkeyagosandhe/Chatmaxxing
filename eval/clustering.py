@@ -10,7 +10,7 @@ import json
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
 langfuse = get_client()
 
 def cluster_failures(results: list, n_clusters: int = 3) -> list:

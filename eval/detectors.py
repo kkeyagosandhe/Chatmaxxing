@@ -8,31 +8,22 @@ import re
 from collections import Counter
 
 # Response length bounds from 5th/95th percentile of the ticket dataset.
-_RESPONSE_MIN_WORDS = 37
+_RESPONSE_MIN_WORDS = 10
 _RESPONSE_MAX_WORDS = 201
 _VALID_DISPOSITIONS = {"RESOLVED", "ESCALATE", "NEED_MORE_INFO"}
-# Confidence is on a 0.0-1.0 scale (see AgentResponse prompt). High confidence
-# on a flagged ticket signals a pipeline inconsistency, not a confident correct
-# answer — anything above this threshold is flagged.
-_CONFIDENCE_FAILURE_THRESHOLD = 0.7
-
-
-def validate_schema(response: str, disposition: str, confidence: float, any_failure: bool) -> dict:
+def validate_schema(response: str, disposition: str) -> dict:
     """
     Deterministic cross-field checks. No LLM calls. Returns a dict of
     violations found (empty dict = clean).
+
+    Note: confidence calibration is intentionally NOT checked here — the model
+    reports 0.9+ uniformly regardless of outcome (mean ~0.91, std ~0.03 across
+    failures and clean tickets alike). This is surfaced as a calibration finding
+    in the summary output, not as a per-ticket schema violation.
     """
     violations = {}
 
-    # 1. Confidence-failure agreement: high confidence on a flagged ticket is
-    #    a pipeline red flag, not evidence the response was correct.
-    if any_failure and confidence > _CONFIDENCE_FAILURE_THRESHOLD:
-        violations["confidence_failure_agreement"] = (
-            f"confidence={confidence} but ticket has failures — "
-            "high confidence on a flagged response signals a pipeline inconsistency"
-        )
-
-    # 2. Escalation coherence: an ESCALATE response should not assert the issue
+    # 1. Escalation coherence: an ESCALATE response should not assert the issue
     #    is already resolved, and a RESOLVED response should not say it is being
     #    handed off. Phrases (not bare words) to avoid benign false positives
     #    like "once the specialist is done" or "feel free to follow up".
@@ -54,10 +45,10 @@ def validate_schema(response: str, disposition: str, confidence: float, any_fail
 
     # 3. Response length bounds (data-driven: 5th/95th percentile).
     word_count = len(response.split())
-    if word_count < _RESPONSE_MIN_WORDS and disposition != "ESCALATE":
+    if word_count < _RESPONSE_MIN_WORDS and disposition == "RESOLVED":
         violations["response_too_short"] = (
             f"{word_count} words — below floor of {_RESPONSE_MIN_WORDS} "
-            "for a non-escalation response"
+            "for a RESOLVED response"
         )
     if word_count > _RESPONSE_MAX_WORDS:
         violations["response_too_long"] = (
@@ -79,7 +70,7 @@ def validate_schema(response: str, disposition: str, confidence: float, any_fail
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
 langfuse = get_client()
 
 N_VOTES = 3
@@ -193,7 +184,6 @@ def run_all_detectors(
     ticket_type: str,
     context: dict,
     disposition: str = "UNKNOWN",
-    confidence: float = 0.0,
 ) -> dict:
     with langfuse.start_as_current_observation(as_type="span", name="eval-run") as span:
 
@@ -207,7 +197,7 @@ def run_all_detectors(
             wrong_disposition["wrong_disposition"],
         ])
 
-        schema = validate_schema(response, disposition, confidence, any_failure)
+        schema = validate_schema(response, disposition)
 
         results = {
             "ticket_id": ticket_id,

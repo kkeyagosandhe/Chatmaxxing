@@ -12,7 +12,11 @@ import pandas as pd
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(
+    vertexai=True,
+    project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+    location="us-central1"
+)
 langfuse = get_client()
 
 
