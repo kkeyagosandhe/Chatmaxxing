@@ -162,6 +162,25 @@ eval/fix_proposer.py    ← caveat annotations (ambiguity, human/LLM gap, review
 
 ---
 
+## Eval results
+
+**Dataset:** Twitter multi-turn customer support conversations (1,000 grouped threads, 4+ turns each)
+
+| Metric | Result |
+|--------|--------|
+| Tickets evaluated | 20 |
+| Any failure | 12 / 20 (60%) |
+| Inaccurate responses | 1 / 20 |
+| Wrong disposition | 7 / 20 (35%) |
+| Needs human review | varies by run |
+| Agent confidence avg | ~0.91 on failures and clean tickets alike |
+
+**Key finding:** Disposition errors dominate at ~35%. Agent confidence is miscalibrated — it reports high confidence (~0.91) regardless of whether the response was correct or not, making confidence an unreliable quality signal on its own.
+
+**Grounding gate impact:** Running with the grounding gate on reduced grounding failures from 1 → 0 and total failures from 8 → 7 across 20 tickets, converting ungrounded confident-but-wrong responses into safe escalations.
+
+---
+
 ## Key design decisions
 
 **3-vote majority voting** — each detector calls Gemini 3 times and takes the majority. A 2/3 split sets `uncertain=True`, which propagates into the caveat layer. This surfaces cases where even the judge is unsure, instead of hiding the uncertainty behind a single verdict.

@@ -4,3 +4,11 @@ __pycache__
 *.pyc
 .DS_Store
 data/twcs.csv
+cohenkappa*.docx
+gold_set_template.xlsx
+*.nosync.*
+test_gemini.py
+test_langfuse.py
+tests/
+data/prepare_data.py
+data/prepare_twitter_data.py

@@ -101,10 +101,12 @@ def _majority_vote(samples: list, flag_key: str) -> dict:
 
 
 def _vote(prompt: str, flag_key: str) -> dict:
+    import time
     samples = []
     for _ in range(N_VOTES):
-        result = safe_generate(client, "gemini-2.5-flash", prompt)
+        result = safe_generate(client, "gemini-2.5-flash-lite", prompt)
         samples.append(_parse_json(result.text))
+        time.sleep(2)
     return _majority_vote(samples, flag_key)
 
 

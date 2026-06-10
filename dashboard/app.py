@@ -1,8 +1,33 @@
 import sys
 sys.path.append(".")
 
+import json
+import os
 import streamlit as st
 import pandas as pd
+
+CACHE_PATH = os.path.join(os.path.dirname(__file__), "cached_results.json")
+
+
+def load_cache():
+    if not os.path.exists(CACHE_PATH):
+        return None, None, None
+    with open(CACHE_PATH) as f:
+        data = json.load(f)
+    from eval.fix_proposer import CaveatAnnotation
+    results = data["results"]
+    clusters = data["clusters"]
+    caveats = [CaveatAnnotation(**c) for c in data["caveats"]]
+    return results, clusters, caveats
+
+
+def save_cache(results, clusters, caveats):
+    with open(CACHE_PATH, "w") as f:
+        json.dump({
+            "results": results,
+            "clusters": clusters,
+            "caveats": [c.model_dump() for c in caveats],
+        }, f, indent=2)
 
 st.set_page_config(page_title="AI Agent Quality & Performance Hub", layout="wide")
 
@@ -118,6 +143,7 @@ with st.sidebar:
     if st.button("▶ Run analysis", use_container_width=True, type="primary"):
         with st.spinner("Running…"):
             results, clusters, caveats = run_pipeline(start_idx, end_idx)
+            save_cache(results, clusters, caveats)
             st.session_state.results = results
             st.session_state.clusters = clusters
             st.session_state.caveats = caveats
@@ -135,8 +161,13 @@ with st.sidebar:
 
 
 # ---------------------------------------------------------------------------
-# No data yet
+# No data yet — try loading from cache
 # ---------------------------------------------------------------------------
+if st.session_state.results is None:
+    cached = load_cache()
+    if cached[0] is not None:
+        st.session_state.results, st.session_state.clusters, st.session_state.caveats = cached
+
 if st.session_state.results is None:
     st.title("AI Agent Quality & Performance Hub")
     st.info("Select a ticket range in the sidebar and click **Run analysis** to get started.")

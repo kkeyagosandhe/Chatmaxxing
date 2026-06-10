@@ -51,7 +51,7 @@ Your job is to surface uncertainty, not eliminate it.
 
 Return a JSON array of caveat objects, one per cluster, in the same order."""
 
-        response = safe_generate(client, "gemini-2.5-flash", prompt)
+        response = safe_generate(client, "gemini-2.5-flash-lite", prompt)
 
         text = response.text.strip()
         text = re.sub(r"```json|```", "", text).strip()

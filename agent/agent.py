@@ -77,7 +77,7 @@ def run_agent(row: dict, prompt_template: str = DEFAULT_PROMPT, use_grounding_ga
             description=ticket["description"],
         )
 
-        parsed = safe_generate_structured(client, "gemini-2.5-flash", prompt, AgentResponse)
+        parsed = safe_generate_structured(client, "gemini-2.5-flash-lite", prompt, AgentResponse)
 
         # Strip any tag the model wrote into the text, keep clean body.
         clean_text = re.sub(r'\[(RESOLVED|ESCALATE|NEED_MORE_INFO)\]', '', parsed.response_text).strip()

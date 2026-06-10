@@ -75,7 +75,7 @@ Sample failure: {sample}
 Reply with JSON only:
 {{"root_cause": "5 word label", "fix": "one sentence fix"}}"""
 
-            response = safe_generate(client, "gemini-2.5-flash", prompt)
+            response = safe_generate(client, "gemini-2.5-flash-lite", prompt)
 
             import re
             text = response.text.strip()
