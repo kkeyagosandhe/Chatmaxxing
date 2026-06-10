@@ -2,24 +2,98 @@
   "results": [
     {
       "eval": {
-        "ticket_id": 13197,
+        "ticket_id": 14600,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent acknowledges the customer's DM and confirms they will assist further, directly addressing the customer's action to send a DM for help.",
+          "reason": "The agent acknowledges the customer's continued problem and asks for information that is directly relevant to troubleshooting the issue.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response accurately reflects the conversation history and does not introduce any new or incorrect information.",
+          "reason": "The agent accurately reflected the customer's issue and asked a relevant troubleshooting question that was previously asked in the conversation history.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly identified that critical details are missing and asked a relevant question to proceed with the investigation, thus applying the [NEED_MORE_INFO] rubric.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.8,
+      "query": "CONVERSATION HISTORY:\nCustomer: @115758 trying to play der eisendrache while its free but am getting this whenever i try to play. please help https://t.co/1yPyrKWHcH\nAgent: @119129 Good afternoon, you can only play the free map in the public match playlist. ^JP\nCustomer: @ATVIAssist i am trying to play in the public match playlist, still wants me to buy dlc to play it\nAgent: @119129 Can you provide a video of this? ^JP\nCustomer: @ATVIAssist  https://t.co/3nCx1ywqom\nAgent: @119129 Did you download the recent title update for the free DLC zombies map? ^JP\nCustomer: @ATVIAssist ps. yesterday I got into a lobby for der eisendrache, but didn't actually start a match. today however, i'm getting the purchase prompt\nAgent: @119129 Hello there. Sorry for the late response. I am just checking if you still in need assistance. Please let me know. ^RN\n\nCURRENT MESSAGE:\n@ATVIAssist I am continuing to have the same problem as seen in my prior gif. Have yet to be able to play Der Eisendrache. it wants me to dwnld map pack",
+      "response": "@115758 I understand you're still unable to access Der Eisendrache even after trying the public match playlist. To help me further investigate this, could you please confirm if you have downloaded the recent title update for the free DLC zombies map?\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14607,
+        "goal_drift": {
+          "score": 0.0,
+          "reason": "The agent's response acknowledges the direct message but does not address the customer's underlying concern about whether their code has been redeemed or applied.",
+          "drifted": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's current message and does not introduce any information not present in the context.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 0.0,
-          "reason": "The agent picked [RESOLVED] but only acknowledged the issue without solving it, as they are moving the conversation to DMs.",
+          "reason": "The agent acknowledged the issue but did not provide a solution, therefore [RESOLVED] is the incorrect disposition.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @ATVIAssist I am trying to redeem my pre-order code at https://t.co/no8zT0YVWO and get a 504 gateway time-out several times of trying. HELP!\nAgent: @119130 Hey King, there is an issue with our redemption site - hang on to your code, things should be cleared up soon! ^NM\nCustomer: @ATVIAssist Tells me code has been redeemed - possibly because I attempted it several times thinking it was my connection or is it applied already?\nAgent: @119130 the code that you are redeeming typed out! Thanks ^KO https://t.co/c9WoAfwenP\n\nCURRENT MESSAGE:\n@ATVIAssist Just sent you a direct message with code information.",
+      "response": "Hi there! Thanks for reaching out. We've received your direct message with the code information and will review it shortly. We'll get back to you as soon as possible.\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14616,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's statement and confirms they will be available to continue the conversation tomorrow, directly addressing the customer's intent.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a polite closing that acknowledges the customer's stated intention to return tomorrow and does not introduce any new information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the user's need to pause but did not provide a complete answer or solution, thus [RESOLVED] was the wrong disposition.",
           "wrong_disposition": true,
           "votes": "3/3",
           "uncertain": false
@@ -34,30 +108,30 @@
       "gate_triggered": false,
       "disposition": "RESOLVED",
       "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: \u00c9cran d\u2019iPhone cass\u00e9. Impossible \u00e0 connecter sur iTunes ... des astuces svp ? @AppleSupport\nAgent: @118713 We offer support via Twitter in English. Contact us for help in your preferred language here: https://t.co/IBIY3vMgPj\nCustomer: @AppleSupport My screen is broken and I\u2019d like to connect in iTunes in order to save my data. How can I do ? iTunes request to unlock my device ...\nCustomer: @AppleSupport Connect to*\nAgent: @118713 We understand how tough that is. Please send us a DM to let us know if you have a recent backup in iCloud, or iTunes. https://t.co/GDrqU22YpT\n\nCURRENT MESSAGE:\n@AppleSupport Sent",
-      "response": "Thank you for reaching out. We have received your DM and will be able to assist you further there.\n[RESOLVED]"
+      "query": "CONVERSATION HISTORY:\nCustomer: A2 I believe there is an issue at @AirBnBHelp #CustServ. Agents appear to have very limited ability to compensate for errors @115783 causes. https://t.co/d2E2GNDOSU\nCustomer: @119132 Hi Linda, please send us a DM with more details regarding this issue and we can investigate further. Best.\nCustomer: @115783 I can't DM you because you are not following me. I'm getting ready to go to a Halloween party so this may get delayed. TY for your tweet!\nAgent: @119132 You can send us a DM from here. Whenever you have time, Linda. https://t.co/WCQEFGIlXC\n\nCURRENT MESSAGE:\n@AirbnbHelp Thank you! I will be back to you tomorrow.",
+      "response": "Thank you for your patience, Linda! We'll be here when you're ready to continue the conversation tomorrow.\n[RESOLVED]"
     },
     {
       "eval": {
-        "ticket_id": 13208,
+        "ticket_id": 14621,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent acknowledges the customer's iMessage issue and explains why more information is needed to troubleshoot.",
+          "reason": "The agent acknowledges the customer's question about a potentially corrupt file and explains that they are investigating it.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent accurately summarized the customer's issue and asked for relevant troubleshooting information without introducing any external facts or claims.",
+          "reason": "The agent's response is a general statement about investigating a potential wider issue, which is not a hallucination as it doesn't introduce specific facts not present in the context.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
-          "score": 1.0,
-          "reason": "[NEED_MORE_INFO] applies because the agent cannot proceed without knowing the user's device and iOS version to troubleshoot the reported issue.",
-          "wrong_disposition": false,
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue and stated they are investigating, but did not provide a solution, thus [RESOLVED] is the incorrect disposition.",
+          "wrong_disposition": true,
           "votes": "3/3",
           "uncertain": false
         },
@@ -66,34 +140,34 @@
           "passed": true,
           "violation_count": 0
         },
-        "any_failure": false
+        "any_failure": true
       },
       "gate_triggered": false,
       "disposition": "NEED_MORE_INFO",
-      "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: Annnnnnd @115858 releases the best update yet!!!!! 70 new emojis!?! Fuck yes. But fix my iMessage first. Kthanks.\nAgent: @118716 We're glad you're excited about the emojis! Let us help with iMessage. What's going on?\n\nCURRENT MESSAGE:\n@AppleSupport It gets stuck sideways and it will go up to previous messages and not show me the latest until I close the app and reopen.",
-      "response": "We understand that iMessage is getting stuck sideways and not showing the latest messages until you reopen the app. To help us troubleshoot this, could you please tell us which device you are using and the version of iOS it's running?\n[NEED_MORE_INFO]"
+      "confidence": 0.8,
+      "query": "CONVERSATION HISTORY:\nCustomer: Hey @XboxSupport - Saw #KotOR available for download on Marketplace on my Xbox 360, 3.8GB. $9.99 and it's \"Corrupt\" - Any fix? Many w/ issue\nAgent: @119134 redownload. This can also mean that your connection is weak and experiencing packet loss.  2 ^CO\nCustomer: @XboxSupport My connection, to provide context. https://t.co/hlGP7m9HTx\nAgent: @119134 Thanks for that picture. Let's go ahead and initiate the download from the web martketplace: https://t.co/CTA3SOigCA ^CO\nCustomer: @XboxSupport Even signed in under my account, that link wants me to purchase the game again.\nCustomer: @XboxSupport Now I have been told it's in my download queue using the web marketplace. Deleted another corrupted attempt and trying again...\nAgent: @119134 Keep us updated. If you still see issues, let's try another power cycle of your console and router, and try again. ^CO\n\nCURRENT MESSAGE:\n@XboxSupport I'll keep you posted. If this problem has been popping up for multiple people on the 360, could the file we're all downloading be corrupt?",
+      "response": "That's a possibility we're looking into. We're investigating if there's a wider issue with the file on our end. Thanks for your patience while we check this out.\n[NEED_MORE_INFO]"
     },
     {
       "eval": {
-        "ticket_id": 13218,
+        "ticket_id": 14655,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent's response directly acknowledges the customer's update that the issue is fixed.",
+          "reason": "The agent's response directly acknowledges the customer's gratitude and confirms the resolution of the issue, aligning with the conversation's conclusion.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response is a generic closing statement and does not introduce any new information not present in the context.",
+          "reason": "The agent's response accurately reflects the resolution of the customer's issue based on the provided conversation history and does not introduce any new, unverified information.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent provided a complete answer or solution that fully addresses the issue.",
+          "reason": "The agent provided a complete answer and confirmed the issue was addressed, fitting the [RESOLVED] disposition.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
@@ -107,30 +181,30 @@
       },
       "gate_triggered": false,
       "disposition": "RESOLVED",
-      "confidence": 0.95,
-      "query": "CONVERSATION HISTORY:\nCustomer: @118721 @AppleSupport my iPhone is not syncing and stuck on 'Copying diagnostic information'? 6s, latest version iOS and iTunes.\nCustomer: @118720 @118721 @AppleSupport Been having same issue\nAgent: @118719 We want to help. DM us details on the iOS version you have and which iTunes version. We'll work with you there. https://t.co/GDrqU2kzhr\n\nCURRENT MESSAGE:\n@AppleSupport Thanks fixed!!",
-      "response": "That's great to hear! If you need anything else, feel free to reach out.\n[RESOLVED]"
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @AirAsiaSupport  You have changed our flight times - we cannot travel at the new time you have changed the flight to!\nCustomer: @AirAsiaSupport Your email says that we can amend the flight times FREE OF CHARGE but you\u2019re still charging us when we try to amend on the app.\nCustomer: @AirAsiaSupport This is incredibly frustrating and you need to resolve this ASAP.\nAgent: @119141 Hi Teya , Could you provide us the booking number for further checking. We will advise you accordingly. Thanks - Khairul\nCustomer: @AirAsiaSupport The booking number is KMIBYW.\nAgent: @119141 provide us your preferred time and we will have it sorted for you =) Yana\nCustomer: @AirAsiaSupport Thank you so much. We would like to fly on an early flight which arrives in Hat Yai before 11am. The 07:50 flight would be suitable.\nAgent: @119141 We have forwarded this to the team and you will receive the revised itinerary once done ya Teya =) Yana\n\nCURRENT MESSAGE:\n@AirAsiaSupport Thank you! Much appreciated \ud83d\ude4f\ud83c\udffd",
+      "response": "You're most welcome, Teya! Glad we could assist you with your flight amendment. Have a great trip!\n[RESOLVED]"
     },
     {
       "eval": {
-        "ticket_id": 13238,
+        "ticket_id": 14691,
         "goal_drift": {
-          "score": 1.0,
-          "reason": "The agent acknowledges the customer's frustration and escalates the issue with a clear reason related to the ongoing problem of pavement parking.",
+          "score": 0.5,
+          "reason": "The agent acknowledges the customer's complaint and explains why more information is needed by directing them to the Critical Response Line.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response accurately reflects the customer's frustration and the ongoing nature of the issue without introducing any new, unverified information.",
+          "reason": "The agent's response accurately reflects the information provided in the context and does not introduce any new or fabricated details.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent escalated the issue to management as it required further investigation beyond their scope.",
+          "reason": "The agent correctly chose [ESCALATE] because the issue requires human review and specialized access, as indicated by the instruction to contact the Critical Response Line.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
@@ -145,36 +219,406 @@
       "gate_triggered": false,
       "disposition": "ESCALATE",
       "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: Even more #PavementParking by another inconsiderate selfish @Tesco driver in Colchester. https://t.co/qYUC4FRp7k\nAgent: @118731 Can you please let me know the time and address of where this happened? I can ensure it is addressed. TY - Chris 2/2\n\nCURRENT MESSAGE:\nWhy bother @Tesco I've reported many in Colchester &amp; your company really DGAF &amp; it continues. Want it stopped then deal with the depot.",
-      "response": "I understand your frustration and I apologize that this issue is still ongoing. I have escalated this to our management team to investigate further with the relevant depot. Thank you for your continued patience.\n[ESCALATE]"
+      "query": "CONVERSATION HISTORY:\nCustomer: @983 @984 Delayed on #muni yet again; giving up on transit &amp; time to perm switch to @115879 for commuting #OnlyOnMuni #NJudah\nAgent: @119156 Hey there. Can you please send us a DM with the phone number associated with your account? :) https://t.co/SXpdictw1A\nCustomer: @AskLyft @119156 hi you've yet to refund me for the ride where the driver took me to the wrong location and grabbed my arm\nAgent: @119155 Please report this to our Critical Response Line by tapping the pink 'Call Me' button at https://t.co/93jojKlTCK.\n\nCURRENT MESSAGE:\n@AskLyft i've filed a complaint numerous times",
+      "response": "We're so sorry to hear about your experience and that your previous attempts to resolve this haven't been successful. To ensure this is handled appropriately, please contact our Critical Response Line directly via the 'Call Me' button at https://t.co/93jojKlTCK so we can investigate this further.\n[ESCALATE]"
     },
     {
       "eval": {
-        "ticket_id": 13272,
+        "ticket_id": 14709,
+        "goal_drift": {
+          "score": 0.0,
+          "reason": "The agent's response drifts because it ignores the customer's statement that they have already tried contacting them and will not return, instead offering a generic apology and asking for another chance.",
+          "drifted": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a generic apology and a request for another chance, which is standard customer service language and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent picked [RESOLVED] but only acknowledged the issue without solving it, failing to meet the criteria for a complete answer or solution.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: Here is proof!! Do not go to @119158 unless you plan on waiting at least 20 mins for way over priced food https://t.co/5l2it7B4Yv\nAgent: @119163 Sorry to hear that, Tiffany. Please e-mail us more details about your visit to __email__ &amp; we will address.\n\nCURRENT MESSAGE:\n@ArbysCares I already tried that last time. I will not go back, and I have advised others I know to avoid it as well.",
+      "response": "We understand your frustration and apologize that your previous experience was not satisfactory. We value your feedback and will use it to improve our service. We hope you will consider giving us another chance in the future.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14741,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent's response directly acknowledges the customer's thanks and confirms the issue was resolved.",
+          "reason": "The agent acknowledges the customer's previous message and confirms they are waiting for more information to resolve the issue.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response is a generic closing statement that does not introduce any new or incorrect information.",
+          "reason": "The agent's response is a generic acknowledgment and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent's response indicates they are waiting for further input from the user, which aligns with the [NEED_MORE_INFO] disposition.",
+          "wrong_disposition": false,
+          "votes": "2/3",
+          "uncertain": true
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @119158 Said their point of sale system would not accept Arby's gift cards? How can that be? Thanks. https://t.co/CZbd1r0AiC\nAgent: @119177 We apologize, Glen. Please email us more details about your visit to __email__ &amp; we will make it right.\n\nCURRENT MESSAGE:\n@ArbysCares Thanks. Will get with you asap.",
+      "response": "@119158 Thanks for letting us know! We look forward to hearing from you soon so we can resolve this.\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14751,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's email and confirms that their team is reviewing the message and will follow up, directly addressing the customer's statement.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's statement that they have responded via email and that the ball is in ArbysCares' court, without introducing any new or unsupported information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent only acknowledged the issue and stated they would follow up, which does not constitute a complete answer or solution.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: A complaint about this was sent to @119158 23 days ago. 8 reasons for bad service. No reply. Guess they no longer want our business. https://t.co/nGN4ZTgiJI\nAgent: @119181 We apologize. Please email us more details about your visit to __email__ &amp; we will make it right.\n\nCURRENT MESSAGE:\n@ArbysCares I have responded via email. the ball is in your court. Do something with it.",
+      "response": "We see you've reached out via email and appreciate you providing the details. Our team is reviewing your message and will follow up with you directly via email as soon as possible.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14771,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's experience and escalates with a clear reason related to the question.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately referenced the customer's location and acknowledged the issue without introducing any external information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue but did not provide a solution, indicating that escalation is necessary.",
+          "wrong_disposition": false,
+          "votes": "2/3",
+          "uncertain": true
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "ESCALATE",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: I went to @119158 and they were out of roast beef!! &amp; No more chocolate lava cakes??? How does one run out of roast beef \"for the hour\"?????!!!\nAgent: @119189 Sorry to hear that. Which restaurant did you visit?\n\nCURRENT MESSAGE:\n@ArbysCares in kent ohio",
+      "response": "We're sorry to hear about your experience at our Kent, Ohio location. We'll look into this for you.\n[ESCALATE]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14776,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly answers the customer's implied question by acknowledging their feedback and offering a resolution.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately reflected the customer's feedback and location from the provided context without introducing any new or unsupported information.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent provided a complete answer or solution that fully addresses the issue, thus [RESOLVED] is the correct disposition.",
+          "reason": "The agent provided a complete solution by acknowledging the issue, offering to pass feedback to the restaurant, and expressing hope for a future positive experience, thus fully addressing the support inquiry.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: Dang it @119158. The mozz sticks were \ud83d\udd25 but my cookie was overcooked and crispy \ud83d\ude2d #almosttheperfectmunchiemeal\nAgent: @119190 Sorry about that. Which restaurant did you visit?\n\nCURRENT MESSAGE:\n@ArbysCares Toledo, OH on Talmadge. Usually they are so on point!",
+      "response": "We appreciate you letting us know about your experience at our Toledo, OH location on Talmadge. We're sorry to hear about the overcooked cookie, and we'll be sure to pass your feedback along to the restaurant team. We hope you'll give us another chance to make it right!\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14788,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly addresses the customer's complaint about the long wait time and the inconvenience caused by the drive-through situation.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's complaint about wait times and directly addresses the mentioned store number without introducing any external information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue and stated they are investigating, but did not provide a complete answer or solution, thus not meeting the criteria for [RESOLVED].",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @119158 HOW can you be out of roast beef??! What happened to \u201cwe\u2019ve got the meat!\u201d You ain\u2019t got it in myrtle Beach. \ud83d\ude11\nAgent: @119194 Thank you for bringing this to our attention. Which restaurant location in Myrtle Beach did you visit? https://t.co/Ta9ZX4Pc0A\n\nCURRENT MESSAGE:\n@ArbysCares Store 673. We waited in the drive through line for at least 10 minutes before we had to ask the car behind us to move so we could back out.",
+      "response": "We sincerely apologize for the long wait time and the inconvenience this caused. We understand how frustrating it is to wait that long and then have to ask another customer to move. We are looking into this with Store 673 to ensure this doesn't happen again.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14826,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's complaint about the curly fries and confirms they have received the location information, directly addressing the customer's provided details.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's complaint and acknowledges the provided location information without introducing any new or fabricated details.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue but did not provide a solution, therefore the [RESOLVED] disposition is incorrect.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: Ugh, thanks @119158 for the clump of curly fries... Good thing I had a hammer and chisel 2 eat them ..  #fail https://t.co/QBVbilgz3W\nAgent: @119207 We apologize. Which restaurant location did you visit?\n\nCURRENT MESSAGE:\n@ArbysCares The Arby's on wickersham Rd , highway 370 , nebraska",
+      "response": "@ArbysCares We are so sorry to hear about your experience with the curly fries! We have received the location information and will be looking into this further. Thank you for bringing this to our attention.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14831,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's frustration and explains that more information (tracking number) is needed to investigate the delay, directly addressing the customer's need for an update.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately summarized the customer's issue and reiterated the need for a tracking number, which was present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly chose [NEED_MORE_INFO] because the tracking number is critical information missing from the ticket, preventing further investigation.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @UPSHelp Packages delayed - two day shipping ordered days ago. No reason? Specialty orders for animal food (we\u2019re out) and Tgivs needs. What gives? This is awful service.\nAgent: @119208 I am sorry to hear this. Please provide your tracking number via a DM. We'd be more than happy to take a look into this for you. ^KD https://t.co/wKJHDXWGRQ\n\nCURRENT MESSAGE:\n@UPSHelp  https://t.co/PTCxhQLZ7R",
+      "response": "@UPSHelp I understand your frustration with the delay of your packages, especially since they contain essential items like animal food and Tgivs needs. I've reviewed our previous conversation, and it seems we requested your tracking number via DM to investigate further. Could you please provide that tracking number so we can look into the status of your shipment and provide an update? ^KD\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14834,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's issue of not receiving a response and escalates the situation with a clear reason related to the customer's question.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a generic apology and escalation, which is appropriate given the customer's complaint about a delayed email response.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly chose [ESCALATE] because the issue requires human review by the Guest Support team.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "ESCALATE",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @119158 Sooo....I know y\u2019all are all about the meats...but WHERE IS THE BREAD?!? #AWOLBread https://t.co/I4RxFF1zdE\nAgent: @119209 Please e-mail our Guest Support team more details to __email__ &amp; we will make it right.\n\nCURRENT MESSAGE:\n@ArbysCares Sooo....I emailed and still nothing. Reason?? I\u2019ve waited several weeks at this point.",
+      "response": "We sincerely apologize for the delay in response and the inconvenience this has caused. We are escalating this to our Guest Support team to ensure your email is addressed immediately. Thank you for your patience.\n[ESCALATE]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14838,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's action and offers further assistance, directly addressing the implicit need for support.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a generic acknowledgment of the customer's action and an offer of further assistance, which aligns with standard customer support practices and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent picked [RESOLVED] but only acknowledged the issue without solving it, as the user is still in the process of re-installing macOS.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @AppleSupport iOS 11 is draining the battery on my iPhone 7 twice as fast as iOS 10. Help!\nAgent: @119210 We'd like to gather some more information for better troubleshooting. Can you DM us the country you are located in? https://t.co/GDrqU22YpT\nCustomer: @AppleSupport Help! My computer has been like this since yesterday &amp; I need it. I don\u2019t know what to do. https://t.co/zq8C4Vt7Fn\nAgent: @119210 Use the link below to send us a Direct Message. We\u2019ll meet you there, and we can work towards a resolution together. https://t.co/GDrqU22YpT\n\nCURRENT MESSAGE:\n@AppleSupport Thanks! Re-installing MacOS right now, gonna see if that works.",
+      "response": "We're glad to hear you're trying a re-installation of macOS. Please let us know if this resolves the issue or if you need further assistance.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14851,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly answers the customer's implied question by acknowledging their thanks and offering further assistance.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a standard polite closing and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent provided a polite closing statement indicating the issue was addressed, fitting the [RESOLVED] disposition.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
         },
         "schema": {
           "violations": {
-            "response_too_short": "9 words \u2014 below floor of 10 for a RESOLVED response"
+            "response_too_short": "2 words \u2014 below floor of 10 for a RESOLVED response"
           },
           "passed": false,
           "violation_count": 1
@@ -184,29 +628,66 @@
       "gate_triggered": false,
       "disposition": "RESOLVED",
       "confidence": 1.0,
-      "query": "CONVERSATION HISTORY:\nCustomer: @Delta hi. I've just received a skymiles card from Amex. How can I check my skymiles account using the number on the card?\nAgent: @118735 Hi Bruno, you can put this number online at https://t.co/lVlOjYwO0A and access your account. *AMS\nCustomer: @Delta But a password is requested\nAgent: @118735 From here it should have you fill in your address and prompt you to set up security questions and a password.  *TJW\n\nCURRENT MESSAGE:\n@Delta Thank you!",
-      "response": "You're welcome, Bruno! We're glad we could help.\n[RESOLVED]"
+      "query": "CONVERSATION HISTORY:\nCustomer: 03-6635-1381\nAmazon\u306e\u6709\u6599\u52d5\u753b\u672a\u7d0d\u767a\u751f\n\u306e\u30e1\u30fc\u30eb\u304d\u305f\u3089\u6ce8\u610f\u3057\u3066\n\u67b6\u7a7a\u8acb\u6c42\u3060\u304b\u3089\n\n\u691c\u7d22\u3057\u3066\u826f\u304b\u3063\u305f\u308f\u3002\u3042\u3076\u306d\u3048\u3002\nAgent: @119213 (*\u00b4-`).\uff61oO(\u3054\u5b58\u77e5\u304b\u3068\u601d\u3044\u307e\u3059\u304c\u3001\u5f53\u30b5\u30a4\u30c8\u304b\u3089\u306e\u3054\u8acb\u6c42\u3067\u306f\u3054\u3056\u3044\u307e\u305b\u3093\u306e\u3067\u3001\u3054\u9023\u7d61\u3055\u308c\u307e\u305b\u3093\u3088\u3046\u306b\u3002\u3002)\n\u307e\u305f\u3001\u643a\u5e2f\u5927\u624b3\u793e\u3092\u3054\u5229\u7528\u306e\u5834\u5408\u306b\u306f\u3001\u8ff7\u60d1\u30e1\u30fc\u30eb\u5bfe\u7b56\u3068\u3057\u3066\u3001\u7533\u544a\u7a93\u53e3\u3092\u8a2d\u7f6e\u3057\u3066\u3044\u307e\u3059\u3002\u4eca\u5f8c\u53d7\u4fe1\u3057\u306a\u3044\u305f\u3081\u306b\u3082\u3001\u5404\u7a93\u53e3\u3078\u3054\u7533\u544a\u304f\u3060\u3055\u3044\u3002TY\n\nCURRENT MESSAGE:\n@AmazonHelp \u3042\u308a\u304c\u3068\u3046\u3054\u3056\u3044\u307e\u3057\u305f",
+      "response": "\u3069\u3046\u3044\u305f\u3057\u307e\u3057\u3066\u3002\u307e\u305f\u4f55\u304b\u3054\u3056\u3044\u307e\u3057\u305f\u3089\u3001\u304a\u6c17\u8efd\u306b\u304a\u58f0\u304c\u3051\u304f\u3060\u3055\u3044\u3002\n[RESOLVED]"
     },
     {
       "eval": {
-        "ticket_id": 13291,
+        "ticket_id": 14855,
         "goal_drift": {
-          "score": 0.167,
-          "reason": "The agent's response acknowledges the customer's frustration but fails to directly address the customer's demand to 'fix my issue' and instead asks for more information, which has been requested multiple times.",
-          "drifted": false,
+          "score": 0.0,
+          "reason": "The agent acknowledges the customer's request for tracking information but fails to address the core issue of the refund and the customer's claim of being lied to by the seller and customer care.",
+          "drifted": true,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response is consistent with the provided context and does not introduce any new or fabricated information.",
+          "reason": "The agent correctly identified the customer's need for tracking information on a returned parcel and requested the order ID, which is a standard procedure and not a hallucination.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent correctly chose [NEED_MORE_INFO] because critical details are missing and they cannot proceed without them.",
+          "reason": "The agent correctly chose [NEED_MORE_INFO] because the order ID is critical information missing to proceed with the investigation.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @115821 407-8406190-7752345. i want refund amount -1399/- amazon seller was lying. amazon custamare care side also.\nAgent: @119214 Please don't provide your order details, we consider it to be personal information. Our page is visible to the public. ^SC\n\nCURRENT MESSAGE:\n@AmazonHelp no body inform me. once u return that parcel. please send the tracking id or parcel details. but after 10days i call amazon custamare care",
+      "response": "We understand you're looking for an update on your returned parcel and its tracking information. To assist you further, could you please provide the order ID associated with this return? This will allow us to investigate the status of your parcel and provide you with the tracking details.\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14862,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's issue and asks for more information to help resolve it.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent asked clarifying questions based on the customer's previous statement and the provided article, without introducing new information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly chose [NEED_MORE_INFO] because critical details are missing and the agent cannot proceed without them.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
@@ -220,30 +701,143 @@
       },
       "gate_triggered": false,
       "disposition": "NEED_MORE_INFO",
-      "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: Happy Monday. Not. Another reminder of a 1-bar life with @115911. Yuck.\nAgent: @118741 Let us change thatm. DM us, let's see what's going on there. *JoanO\nCustomer: @TMobileHelp Check my account. You will see my ongoing calls and tickets.\nAgent: @118741 Thank you so much for reaching out can you send us a DM so we can check things out. *AaronB\nCustomer: @TMobileHelp You have been CHECKING THINGS OUT since March 2017, @115911 !\nAgent: @118741 That's definitely a long time- we want #Resolution! Send a DM My way: https://t.co/jGtdfLsVbg *ErikaHoleman\nCustomer: @TMobileHelp @115911 Auto-posted and reposted responses? Not nice!  THIS HAS BEEN A LONG TIME. What are you doing to do, @115911 ?\nAgent: @118741 We're all individual reps here on T-Force ready to get a DM from you so we can work together on things! *ErikaHoleman\n\nCURRENT MESSAGE:\n@TMobileHelp Then go fix my issue, *ErikaHoleman",
-      "response": "I understand your frustration, and I want to assure you that we are here to help. To effectively address your ongoing issue, please send us a direct message with your account details so we can investigate further and work towards a resolution. *ErikaHoleman\n[NEED_MORE_INFO]"
+      "confidence": 0.8,
+      "query": "CONVERSATION HISTORY:\nCustomer: @AppleSupport my phone was acting up. I then restarted it and now all it does is stay on the apple logo when I turn it on. Wtf\nAgent: @119216 We\u2019ve got your back. Let us know if the steps in this article help with your iPhone: https://t.co/8MvHMFZ83h\n\nCURRENT MESSAGE:\n@AppleSupport Still same thing smh",
+      "response": "We're sorry to hear the issue persists. Could you please tell us more about what happened after you tried the steps in the article? For example, did you see any error messages or did the phone shut down again?\n[NEED_MORE_INFO]"
     },
     {
       "eval": {
-        "ticket_id": 13304,
+        "ticket_id": 14882,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent acknowledges the customer's feedback regarding both the flight attendant's conduct and the website's update functionality, and escalates the issue.",
+          "reason": "The agent acknowledges the customer's frustration and explains why more information is needed to investigate the refund issue.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent accurately summarized the customer's concerns and confirmed receipt of the DM without introducing any new or incorrect information.",
+          "reason": "The agent's response is a standard customer service reply that does not introduce any information not present in the context.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
-          "score": 0.2,
-          "reason": "The agent acknowledged the feedback but did not provide a solution or attempt to resolve the issue, thus [ESCALATE] was the incorrect disposition.",
+          "score": 0.0,
+          "reason": "The agent is asking for more information to investigate, which means the issue is not resolved and requires further action beyond the agent's current scope.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {
+            "escalation_coherence": "disposition is ESCALATE but response asserts the issue is already resolved"
+          },
+          "passed": false,
+          "violation_count": 1
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "ESCALATE",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @Uber_Support Ur in app support refuses to acknowledge promise made by phone CS rep for refund. U used to have stellar CS. Now the worst.\nAgent: @119222 We're here to help! Send us a DM with your account email address and we'll be in touch.\nCustomer: @Uber_Support I just did thanks\nAgent: @119222 Our team has recently responded via email. Please reply there if you have additional questions!\n\nCURRENT MESSAGE:\n@Uber_Support Yes and they were absolutely NO help.That is why I came to twitter! U said u are here to help and yet keep passing the buck. No CS loyalty",
+      "response": "We understand your frustration and apologize that you're still experiencing issues with your refund. We want to make sure this is resolved for you. Could you please DM us your account email address and a brief summary of the phone conversation, including the date and time, so we can investigate further?\n[ESCALATE]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14908,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly acknowledges the customer's issues of lateness and missing items and confirms the next step.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately reflected the customer's issue and confirmed that the customer had already contacted customer service, which was present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue but did not provide a solution, therefore the [RESOLVED] disposition is incorrect.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @Tesco must be dishing my grocery shop out to trick or treaters since they\u2019re an hour late already \ud83d\ude44\ud83d\ude29\nAgent: @119231 Sorry Beverley, did you receive your order? - Ceri\n\nCURRENT MESSAGE:\n@Tesco yes and with lots of stuff missing! I\u2019ve emailed your customer services",
+      "response": "Hi Beverley, I'm really sorry to hear that your order was late and that items were missing. I can see you've already emailed our customer service team, and they will be able to investigate this further for you.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14920,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly acknowledges the customer's feedback about email validation and confirms it has been passed to the web team.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's feedback and does not introduce any information not present in the provided context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the feedback but did not provide a solution or answer to a support inquiry, thus not meeting the criteria for [RESOLVED].",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @tesco you don't require users to validate their email address they're entering for tescodirect . receiving someone elses order/account info\nCustomer: @Tesco Nothing to stop me doing a password reset and getting someone else's personal information if I was that way inclined.\nAgent: @119233 Hi Dave, I'm unsure why you'd be sent someone else's details, this is something we take very seriously and I'm sorry this has happened 1/2\nCustomer: @Tesco Because the other customer used the wrong email address and wasn't made to validate it\nAgent: @119233 Hi Dave, thank you for you for the info, I've now replied to your DM. Thanks - David\n\nCURRENT MESSAGE:\n@Tesco Thanks. Your web team.should seriously think about introducing some email address validation on sign up, most other companies do!",
+      "response": "Hi Dave, thanks for your feedback. We've passed your suggestion regarding email validation to our web team for their consideration.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14924,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's clarification and explains that they are checking stock availability, directly addressing the customer's need to find the product.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately reflected the customer's request and acknowledged the typo without introducing any external information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the issue and mentioned they would fix a typo, but did not provide a solution or answer to the support inquiry, thus it should not be marked as resolved.",
           "wrong_disposition": true,
           "votes": "3/3",
           "uncertain": false
@@ -258,29 +852,177 @@
       "gate_triggered": false,
       "disposition": "ESCALATE",
       "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: @AmericanAir Flght attndnt gives me, US born citizen, English lesson. AA said will record my complaint in system. Do better - train your staff! #stockreplies #microaggression\nAgent: @118743 Gate information is shared on the website. Just input your flight number here: https://t.co/hSJ3SkyGEd.\nCustomer: @AmericanAir Problem is when you check the website compulsively and it\u2019s not updated!\nAgent: @118743 We understand that's important to update info quickly and we appreciate your feedback on this.\nCustomer: @AmericanAir Comment doesn\u2019t address problematic comment made by flight attendant.\nAgent: @118743 Please DM your record locator. We'd like to share this feedback with the Flight Service leadership team.\n\nCURRENT MESSAGE:\n@AmericanAir Sent DM. Still no commitment to better staff training and improve web alert function. Sad this is one of our leading airlines. Might be better off with JAL, CX, etc.",
-      "response": "We have received your direct message and are reviewing your feedback regarding the flight attendant's conduct and the website's update functionality. We appreciate you bringing this to our attention and will share it with the appropriate teams.\n[ESCALATE]"
+      "query": "CONVERSATION HISTORY:\nCustomer: Hi @Tesco I live in Newcastle, wheres my nearest store with an Irksh section? Man needs his Club Rock Shandy\nAgent: @119234 Hi Tom, can you confirm this is the item you're looking for? https://t.co/yK4zrlFHm4. Thanks - Peter\n\nCURRENT MESSAGE:\n@Tesco Its the Rock Shandy, so same brand, different flavour. Or even cans of the orange &amp; lemon would do! Ps, your site has a typo",
+      "response": "Hi Tom, thanks for clarifying! I've passed this on to our team to check stock availability for the Rock Shandy and orange & lemon cans in your local stores. We'll let you know as soon as we have an update. Thanks for pointing out the typo on our site too, we'll get that fixed!\n[ESCALATE]"
     },
     {
       "eval": {
-        "ticket_id": 13314,
+        "ticket_id": 14930,
+        "goal_drift": {
+          "score": 0.0,
+          "reason": "The agent's response ignores the customer's expressed sentiment of missing the airline and instead asks a generic question, failing to acknowledge the customer's statement.",
+          "drifted": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a generic greeting and offer of assistance, which is appropriate for a support inquiry and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent's response is a greeting and a question, indicating they need more information to proceed, which aligns with the [NEED_MORE_INFO] disposition.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: happy halloween @Delta\nAgent: @119236 Same to you!  *HDG\nCustomer: @Delta babe its been so long im glad i finally hear back from you\n\nCURRENT MESSAGE:\n@Delta i missed you",
+      "response": "We're happy to hear from you too! How can we help you today?\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14936,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent directly answers the customer's implied question about getting wings by explaining that official wings aren't offered but suggesting alternatives.",
+          "reason": "The agent acknowledges the customer's concern and reiterates that Emirates is responsible for the baggage search, which directly addresses the customer's situation.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent correctly identified that the customer was inquiring about wings and provided relevant information about the online store, which is a reasonable suggestion for a support inquiry.",
+          "reason": "The agent's response accurately reflects the information provided in the context and offers standard advice for a lost baggage situation involving a partner airline.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent provided a complete answer by stating they don't offer official wings and offered an alternative solution with a link to their store.",
+          "reason": "The agent correctly identified that the issue requires follow-up with a third-party airline, which is beyond the agent's direct scope, thus warranting an escalation.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "ESCALATE",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: I\u2019m missing my bag. Tag 8006080773 on DL0140 MSP to CDG and DL8461/AF0192 to BLR, but was rebooked on EK072. What to do? @delta\nAgent: @119238 Oh no, please file a lost baggage claim with EK, they will start the search for you. *TBT\nCustomer: @Delta Already done.\nAgent: @119238 They will keep you updated on the location of the bag. *TBT\n\nCURRENT MESSAGE:\n@Delta EK callled an hour ago and did not have any information of the whereabouts of my bag, but still searching hopefully",
+      "response": "We understand your concern about your missing bag. Since the rebooking was on Emirates (EK), they are responsible for the baggage search. Please continue to follow up with Emirates for updates on your bag's location.\n[ESCALATE]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14960,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's confirmation and reiterates the information needed to fulfill the request, directly addressing the customer's intent.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately reflected the information provided by the customer and the previous agent's request for more information.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly identified that critical details are missing and they cannot proceed without them, thus applying the [NEED_MORE_INFO] disposition.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: Hey hey hey! \u26be\ufe0f #WorldSeries @AmericanAir https://t.co/LeV38WtFPZ\nAgent: @119245 That's probably the best way to watch the #WorldSeries in our Club. #Cheers\nCustomer: @AmericanAir Hi there! Since I have your attention, could you tell corporate for me that Pilar and Jaimie atAdmirals Club T2 SFO are AMAZING. Thanks!\nAgent: @119245 We're more than happy to do that, Myra. Please DM your record locator and we'll share your awesome kudos. #AATeam\nCustomer: @AmericanAir Could I just dm you my ticket? Lol.\nAgent: @119245 You can DM your ticket number, record locator or full name and origin city.\n\nCURRENT MESSAGE:\n@AmericanAir Ok.",
+      "response": "@119245 Thanks for confirming! We'll keep an eye out for your DM with your ticket number, record locator, or full name and origin city so we can pass along your kudos to Pilar and Jaimie.\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14971,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent acknowledges the customer's frustration and explains why more information is needed to investigate the issue.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent accurately reflected the customer's frustration and the information provided in the context without introducing any new or fabricated details.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent correctly identified that critical details are missing and the agent cannot proceed without them, thus applying the [NEED_MORE_INFO] rubric.",
+          "wrong_disposition": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": false
+      },
+      "gate_triggered": false,
+      "disposition": "NEED_MORE_INFO",
+      "confidence": 0.9,
+      "query": "CONVERSATION HISTORY:\nCustomer: @British_Airways Impossible to get hold of staff. Was left 4 days on business trip without my bag, poor customer service.\nAgent: @119247 Please accept my apologies for your delayed bag and the service you received, Freddy. Have you now been reunited with your bag? ^Davina\n\nCURRENT MESSAGE:\n@British_Airways 4 days late. I was assured it was going to be put on 1 of 3 other flights from London to Chicago that day, as was travelling to Wisconsin.",
+      "response": "I am so sorry to hear about the continued delay with your bag and the lack of clear communication regarding its whereabouts. I understand how frustrating this must be, especially when you were assured it would be on one of the earlier flights. To help me investigate this further, could you please provide me with your booking reference or baggage claim tag number?\n[NEED_MORE_INFO]"
+    },
+    {
+      "eval": {
+        "ticket_id": 14979,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent directly acknowledges the customer's playful comment and continues the lighthearted tone.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response is a positive and encouraging reply that aligns with the customer's playful message and does not introduce any information not present in the context.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 1.0,
+          "reason": "The agent provided a complete and appropriate response to the support inquiry, indicating the issue was resolved.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
@@ -295,29 +1037,29 @@
       "gate_triggered": false,
       "disposition": "RESOLVED",
       "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: I was 8 when I told them I'd be a pilot\nAmerican Airlines has the prettiest planes\nHalloween 2017 @118746 @118747 @118748 https://t.co/xEjDA9aEY3\nCustomer: @118746 @118747 @118748 We even managed to find a real @AmericanAir lapel pin! She was disappointed we couldn't get AA wings though! https://t.co/4Ench23Pkn\nAgent: @118745 She looks like a future pilot to us! We can't wait to have her in the captain's chair.\n\nCURRENT MESSAGE:\n@AmericanAir She says she can't wait to get her wings \u2764\ufe0f",
-      "response": "We're so glad she's inspired to fly with American Airlines! While we don't offer official wings for aspiring pilots, we do have some fun aviation-themed items in our online store that she might love: [link to online store]. We can't wait to see her soar!\n[RESOLVED]"
+      "query": "CONVERSATION HISTORY:\nCustomer: Lowkey having baby fever \ud83e\udd14\nCustomer: Update: I feel pregnant lmao with a food baby... @ChipotleTweets hooked it up tonight \ud83d\ude13\nAgent: @119249 Congrats on the literal burrito in the oven. -Jen\n\nCURRENT MESSAGE:\n@ChipotleTweets Thank you \u2764\ufe0f I\u2019ll name her Jen after you",
+      "response": "That's so sweet! We're happy we could be a part of your delicious food baby journey. Enjoy your meal!\n[RESOLVED]"
     },
     {
       "eval": {
-        "ticket_id": 13326,
+        "ticket_id": 14987,
         "goal_drift": {
           "score": 1.0,
-          "reason": "The agent acknowledges the customer's statement that the issue appears resolved and offers further assistance if it reoccurs, directly addressing the customer's update.",
+          "reason": "The agent directly acknowledges the customer's statement and expresses happiness about their experience.",
           "drifted": false,
           "votes": "3/3",
           "uncertain": false
         },
         "hallucination": {
           "score": 0.0,
-          "reason": "The agent's response is a generic closing statement that aligns with the customer's indication that the issue is resolved and does not introduce any new information not present in the context.",
+          "reason": "The agent's response accurately reflects the customer's statement about receiving a 'boorito' and expresses gladness for helping, which is consistent with the provided context.",
           "hallucinated": false,
           "votes": "3/3",
           "uncertain": false
         },
         "wrong_disposition": {
           "score": 1.0,
-          "reason": "The agent provided a complete answer and confirmed the issue was resolved, aligning with the [RESOLVED] disposition.",
+          "reason": "The agent provided a complete answer and solution by acknowledging the customer's positive experience and confirming their satisfaction.",
           "wrong_disposition": false,
           "votes": "3/3",
           "uncertain": false
@@ -331,63 +1073,115 @@
       },
       "gate_triggered": false,
       "disposition": "RESOLVED",
+      "confidence": 1.0,
+      "query": "CONVERSATION HISTORY:\nCustomer: I went to get a boorito at @ChipotleTweets &amp; wen thy asked wat my costume was I said I was a poor grad student so thy gave me the discount \ud83d\ude07\nAgent: @119252 Aw! I know that feeling. Thanks for stopping by. -Jen\n\nCURRENT MESSAGE:\n@ChipotleTweets Omg thank you so much it was a much needed boorito",
+      "response": "We're so glad we could help make your day a little brighter with a boorito! Thanks for sharing your experience with us.\n[RESOLVED]"
+    },
+    {
+      "eval": {
+        "ticket_id": 15014,
+        "goal_drift": {
+          "score": 1.0,
+          "reason": "The agent's response acknowledges the customer's intent to DM their Rapid Rewards number and confirms receipt, directly addressing the customer's previous message.",
+          "drifted": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "hallucination": {
+          "score": 0.0,
+          "reason": "The agent's response accurately reflects the customer's intent to DM their Rapid Rewards number, which was requested in the previous turn.",
+          "hallucinated": false,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "wrong_disposition": {
+          "score": 0.0,
+          "reason": "The agent acknowledged the user's DM and Rapid Rewards number but did not provide any resolution or answer to the support inquiry, thus it should not be marked as RESOLVED.",
+          "wrong_disposition": true,
+          "votes": "3/3",
+          "uncertain": false
+        },
+        "schema": {
+          "violations": {},
+          "passed": true,
+          "violation_count": 0
+        },
+        "any_failure": true
+      },
+      "gate_triggered": false,
+      "disposition": "RESOLVED",
       "confidence": 0.9,
-      "query": "CONVERSATION HISTORY:\nCustomer: Starting to wonder about @115722 ... getting 1/3 my speed again...\nAgent: @118754 Let's get you up to speed! Are you getting the speed issue on wired or wireless connections? ^DDD\nCustomer: @VerizonSupport Definite wireless. My Xbox is wired, and video constantly slows and has to cache. So I think that too\nAgent: @118754 Thank you and sorry to hear about the trouble. With no other active devices post your wired results from https://t.co/nvgWR6fWrr so we have a benchmark to work with. ^JRA\nCustomer: @VerizonSupport It\u2019s a little higher now https://t.co/Lg4MzEaYY2\nAgent: @118754 Those wireless speeds look good. What do you get wired with no other active devices? ^JRA\n\nCURRENT MESSAGE:\n@VerizonSupport It appears everything is fine now.... this happens a lot, randomly",
-      "response": "@118754 Glad to hear things are back to normal! If the issue arises again, please don't hesitate to reach out. We're here to help!\n[RESOLVED]"
+      "query": "CONVERSATION HISTORY:\nCustomer: @SouthwestAir I heard a wonderful and heart-warming story from my @115873 passenger yesterday about the airline helping her after breaking her foot. It doesn't surprise me. Southwest is a great company.\nAgent: @119261 We love taking care of our Passengers, Thomas. Thanks for sharing the love. ^MR\nCustomer: @SouthwestAir Sure thing. I'm a busy man, but I try to promote Southwest whenever I can. When my @115873 passengers moan about other airlines, I always enquire why they didn't book with SWA.\nAgent: @119261 Ha, you're right! We don't offer flights on 3rd party sites. We really appreciate you being an advocate for us. Please DM your Rapid Rewards # for some extra love. ^MR\nCustomer: @SouthwestAir I don't have a rapid rewards number, unfortunately.\nAgent: @119261 No worries! You can enroll here: https://t.co/AdziQzHbDF. ^MR\n\nCURRENT MESSAGE:\n@SouthwestAir Sorry. You said to DM that information. Will do so now....",
+      "response": "@SouthwestAir Thanks for reaching out! We appreciate you taking the time to DM us your Rapid Rewards number. We'll be sure to take good care of you. ^MR\n[RESOLVED]"
     }
   ],
   "clusters": [
     {
-      "cluster_id": 2,
-      "root_cause": "Incorrect disposition applied",
-      "fix": "Ensure disposition accurately reflects resolution status.",
-      "count": 1,
+      "cluster_id": 0,
+      "root_cause": "Incomplete response, missed customer concern",
+      "fix": "Ensure all parts of the customer's query are addressed before responding.",
+      "count": 11,
       "tickets": [
-        13197
+        14607,
+        14616,
+        14621,
+        14751,
+        14771,
+        14788,
+        14826,
+        14908,
+        14920,
+        14924,
+        15014
       ],
-      "has_uncertain": false
+      "has_uncertain": true
     },
     {
-      "cluster_id": 0,
-      "root_cause": "Unclear customer request",
-      "fix": "Ask clarifying questions to understand the customer's needs better.",
-      "count": 1,
+      "cluster_id": 2,
+      "root_cause": "Agent ignored customer's prior contact",
+      "fix": "Acknowledge customer's previous attempts and address their stated intent.",
+      "count": 5,
       "tickets": [
-        13272
+        14709,
+        14741,
+        14838,
+        14855,
+        14930
       ],
-      "has_uncertain": false
+      "has_uncertain": true
     },
     {
       "cluster_id": 1,
-      "root_cause": "Disposition mismatch, no resolution",
-      "fix": "Ensure the disposition accurately reflects the interaction outcome and resolution.",
-      "count": 1,
+      "root_cause": "Unclear customer request",
+      "fix": "Ask clarifying questions to understand the customer's needs better.",
+      "count": 2,
       "tickets": [
-        13304
+        14851,
+        14882
       ],
       "has_uncertain": false
     }
   ],
   "caveats": [
     {
-      "cluster_label": "Incorrect Disposition",
-      "ambiguity": "The customer's request might have been technically fulfilled by the disposition, but it didn't address the underlying issue or the customer's true intent, leading to a feeling of being unresolved.",
-      "human_llm_gap": "A human might infer the customer's underlying frustration or unmet need even if the literal request was addressed. An LLM might focus solely on whether the stated request was actioned, missing the nuance of customer satisfaction.",
-      "reviewer_signal": "Look for instances where the disposition technically matches the customer's words, but the customer's follow-up or tone suggests they are still unhappy or their problem persists.",
-      "needs_human_review": false
+      "cluster_label": "Incomplete Response",
+      "ambiguity": "The AI might have provided a technically correct answer to a portion of the customer's query, but failed to address all underlying needs or implied questions. The 'completeness' can be subjective, depending on how deeply the AI is expected to infer intent.",
+      "human_llm_gap": "A human might recognize the subtle nuances of the customer's emotional state or unstated needs, leading them to deem the response incomplete. An LLM might focus solely on the explicit text of the query and its direct answer, potentially missing the broader context.",
+      "reviewer_signal": "Look for instances where the AI answered a question but the customer's follow-up indicates they still have an unresolved issue or a related concern.",
+      "needs_human_review": true
     },
     {
-      "cluster_label": "Unclear Request",
-      "ambiguity": "The customer's request might have been ambiguous because they themselves were unsure of what they needed, or they used vague language that could be interpreted in multiple ways.",
-      "human_llm_gap": "A human might be better at picking up on subtle cues in language that indicate a lack of clarity or a hesitant tone, suggesting the customer isn't sure what they want. An LLM might treat the request as a straightforward, albeit potentially complex, query.",
-      "reviewer_signal": "Examine the customer's initial statement for phrases that indicate uncertainty, multiple possible interpretations, or a lack of specific detail about their desired outcome.",
-      "needs_human_review": false
+      "cluster_label": "Ignored Prior Contact",
+      "ambiguity": "The AI might not have access to or the ability to properly parse historical conversation data. What appears to be an 'ignored' prior contact could be a failure in data retrieval or integration, rather than a deliberate oversight by the AI.",
+      "human_llm_gap": "A human reviewer can easily scan previous interactions and identify if the current response contradicts or fails to acknowledge prior discussions. An LLM might struggle to synthesize information across multiple turns or separate conversations, especially if the prior contact is not explicitly referenced in the current turn.",
+      "reviewer_signal": "Check if the customer mentions a previous interaction, a case number, or a specific resolution that the AI's current response does not acknowledge or build upon.",
+      "needs_human_review": true
     },
     {
-      "cluster_label": "Disposition Mismatch, No Resolution",
-      "ambiguity": "The disposition applied might have been a plausible option given the customer's words, but it ultimately did not solve the customer's problem or lead to a satisfactory outcome.",
-      "human_llm_gap": "A human might recognize that the chosen disposition, while seemingly logical, was a poor fit for the actual problem the customer was facing, leading to a dead end. An LLM might have selected the disposition based on keyword matching or a direct interpretation of the request, without fully grasping the context of the problem.",
-      "reviewer_signal": "Check if the disposition chosen, even if it aligns with the customer's stated request, resulted in the customer's issue not being resolved or them needing to contact support again.",
+      "cluster_label": "Unclear Customer Request",
+      "ambiguity": "The customer's request might be genuinely ambiguous, using vague language, jargon, or having multiple possible interpretations. The AI's attempt to clarify or provide a general answer might be reasonable, but the lack of a definitive resolution stems from the initial input.",
+      "human_llm_gap": "A human might be better at inferring the most probable intent behind ambiguous phrasing based on common customer service scenarios or cultural context. An LLM might be more literal, or conversely, might make a 'best guess' that is not aligned with the human's interpretation of the ambiguity.",
+      "reviewer_signal": "Examine cases where the customer's initial query is poorly worded, lacks detail, or could reasonably be interpreted in more than one way, and the AI's response reflects this uncertainty.",
       "needs_human_review": false
     }
   ]
