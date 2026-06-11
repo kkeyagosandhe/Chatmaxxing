@@ -217,7 +217,9 @@ with st.sidebar:
             st.session_state.clusters = clusters
             st.session_state.caveats = caveats
             st.session_state.selected_ticket = None
-        st.success(f"Done — {len(results)} tickets analysed")
+        # Rerun fresh so the main dashboard body renders normally from session
+        # state, instead of rendering at the tail of the sidebar block.
+        st.rerun()
 
     st.divider()
     if st.session_state.flagged_ids:
