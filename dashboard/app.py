@@ -32,23 +32,50 @@ def save_cache(results, clusters, caveats):
 st.set_page_config(page_title="AI Agent Quality & Performance Hub", layout="wide")
 
 # ---------------------------------------------------------------------------
-# Page 1 — API key entry
+# Page 1 — landing: browse cached demo data, or enter a key to run live
 # ---------------------------------------------------------------------------
 if "gemini_api_key" not in st.session_state:
     st.session_state.gemini_api_key = None
+if "entered_app" not in st.session_state:
+    st.session_state.entered_app = False
 
-if st.session_state.gemini_api_key is None:
+if not st.session_state.entered_app:
     st.title("AI Agent Quality & Performance Hub")
-    st.markdown("Enter your Gemini API key to get started. The key is used only for this session and is never stored or transmitted beyond your browser.")
-    key_input = st.text_input("Gemini API key", type="password", placeholder="AIza…")
-    if st.button("Continue", type="primary", disabled=not key_input):
+    st.markdown(
+        "This dashboard evaluates AI customer-support agent responses for "
+        "factual accuracy, goal drift, and wrong outcomes."
+    )
+    st.markdown("**Browse the pre-computed demo run** — no key needed, loads instantly:")
+    if st.button("View demo dashboard", type="primary"):
+        st.session_state.entered_app = True
+        st.rerun()
+
+    st.divider()
+    st.markdown(
+        "**Run live analysis on fresh tickets** — enter a Gemini API key. "
+        "The key is used only for this session and is never stored."
+    )
+    st.info(
+        "**Note on the free tier:** Google's free Gemini API allows 10 requests "
+        "per minute. Each ticket this app evaluates uses ~10 requests (one agent "
+        "reply plus three detectors voting three times each), so a live run takes "
+        "roughly **one minute per ticket** and large ranges will be slow. "
+        "If you just want to see the full output, click **View demo dashboard** "
+        "above — it loads a complete pre-computed run instantly, no key required.",
+        icon="⏱️",
+    )
+    key_input = st.text_input("Gemini API key (optional)", type="password", placeholder="AIza…")
+    if st.button("Enter key and continue", disabled=not key_input):
         st.session_state.gemini_api_key = key_input
+        st.session_state.entered_app = True
         st.rerun()
     st.stop()
 
-# Build the client once per session from the key entered on Page 1.
-from google import genai as _genai
-_gemini_client = _genai.Client(api_key=st.session_state.gemini_api_key)
+# Build the client only if a key was provided. Browsing cached data needs no client.
+_gemini_client = None
+if st.session_state.gemini_api_key:
+    from google import genai as _genai
+    _gemini_client = _genai.Client(api_key=st.session_state.gemini_api_key)
 
 # ---------------------------------------------------------------------------
 # Session state defaults
@@ -150,7 +177,7 @@ with st.sidebar:
         "Ticket range",
         min_value=0,
         max_value=999,
-        value=(425, 445),
+        value=(425, 427),
         label_visibility="collapsed",
     )
     col1, col2 = st.columns(2)
@@ -159,8 +186,21 @@ with st.sidebar:
     with col2:
         end_idx = st.number_input("To", min_value=1, max_value=1000, value=ticket_range[1], step=1)
     st.caption(f"{end_idx - start_idx} tickets selected")
+    st.caption(
+        "ℹ️ Each ticket uses ~10 API calls. On the Gemini free tier (10 calls/min) "
+        "expect roughly 1 minute per ticket. The dashboard below already shows a "
+        "full pre-computed run — you only need to run fresh tickets to see live analysis."
+    )
 
-    if st.button("▶ Run analysis", use_container_width=True, type="primary"):
+    if _gemini_client is None:
+        st.info("Viewing demo data. To run live analysis, reload and enter a Gemini API key.")
+    run_clicked = st.button(
+        "▶ Run analysis",
+        use_container_width=True,
+        type="primary",
+        disabled=_gemini_client is None,
+    )
+    if run_clicked:
         with st.spinner("Running…"):
             results, clusters, caveats = run_pipeline(start_idx, end_idx, gemini_client=_gemini_client)
             save_cache(results, clusters, caveats)
@@ -202,6 +242,12 @@ n = len(results)
 # Metrics overview
 # ---------------------------------------------------------------------------
 st.title("AI Agent Quality & Performance Hub")
+
+if _gemini_client is None:
+    st.caption(
+        "📊 Showing a pre-computed demo run. To evaluate fresh tickets live, "
+        "reload and enter a Gemini API key (note: free tier is ~1 min per ticket)."
+    )
 
 grounding = sum(1 for r in results if r["eval"]["hallucination"]["hallucinated"])
 disposition_err = sum(1 for r in results if r["eval"]["wrong_disposition"]["wrong_disposition"])
