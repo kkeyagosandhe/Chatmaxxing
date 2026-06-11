@@ -1,8 +1,9 @@
 """
 Retry wrappers for Gemini calls.
 
-Gemini occasionally returns 503 UNAVAILABLE or 429 RESOURCE_EXHAUSTED.
-These wrap the calls so transient errors retry with appropriate backoff.
+503/500 errors use tenacity exponential backoff.
+429 RESOURCE_EXHAUSTED errors sleep the retryDelay from the response body,
+then retry inline — tenacity would exhaust attempts too fast on long delays.
 """
 
 import re
@@ -11,23 +12,32 @@ from google.genai import types, errors
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 
-def _before_sleep(retry_state):
-    """If the last exception was a 429 with a retryDelay, honour it."""
-    exc = retry_state.outcome.exception()
-    if exc:
-        match = re.search(r"retryDelay.*?(\d+)s", str(exc))
-        if match:
-            time.sleep(int(match.group(1)) + 2)
+def _extract_retry_delay(exc: Exception) -> int:
+    match = re.search(r"retryDelay.*?(\d+)s", str(exc))
+    return int(match.group(1)) + 2 if match else 60
+
+
+def _call_with_rate_limit_handling(fn, *args, max_attempts=6, **kwargs):
+    """Call fn, sleeping on 429s and retrying up to max_attempts times."""
+    for attempt in range(max_attempts):
+        try:
+            return fn(*args, **kwargs)
+        except errors.ClientError as e:
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                time.sleep(_extract_retry_delay(e))
+            else:
+                raise
+    raise RuntimeError(f"Exceeded {max_attempts} attempts due to rate limiting")
 
 
 @retry(
-    retry=retry_if_exception_type((errors.ServerError, errors.ClientError)),
+    retry=retry_if_exception_type(errors.ServerError),
     wait=wait_exponential(multiplier=2, min=10, max=120),
-    stop=stop_after_attempt(8),
-    before_sleep=_before_sleep,
+    stop=stop_after_attempt(5),
 )
 def _generate(client, model, contents):
-    return client.models.generate_content(
+    return _call_with_rate_limit_handling(
+        client.models.generate_content,
         model=model,
         contents=contents,
         config=types.GenerateContentConfig(temperature=0),
@@ -35,18 +45,18 @@ def _generate(client, model, contents):
 
 
 def safe_generate(client, model, contents, **_kwargs):
-    """Plain text Gemini call with exponential backoff on rate limits and server errors."""
+    """Plain text Gemini call with backoff on server errors and inline retry on 429s."""
     return _generate(client, model, contents)
 
 
 @retry(
-    retry=retry_if_exception_type((errors.ServerError, errors.ClientError)),
+    retry=retry_if_exception_type(errors.ServerError),
     wait=wait_exponential(multiplier=2, min=10, max=120),
-    stop=stop_after_attempt(8),
-    before_sleep=_before_sleep,
+    stop=stop_after_attempt(5),
 )
 def _generate_structured(client, model, contents, schema):
-    response = client.models.generate_content(
+    response = _call_with_rate_limit_handling(
+        client.models.generate_content,
         model=model,
         contents=contents,
         config=types.GenerateContentConfig(
@@ -61,5 +71,5 @@ def _generate_structured(client, model, contents, schema):
 
 
 def safe_generate_structured(client, model, contents, schema, **_kwargs):
-    """Structured Gemini call with exponential backoff. Returns a validated Pydantic instance."""
+    """Structured Gemini call with backoff on server errors and inline retry on 429s."""
     return _generate_structured(client, model, contents, schema)
