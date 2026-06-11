@@ -70,7 +70,8 @@ def validate_schema(response: str, disposition: str) -> dict:
 
 load_dotenv()
 
-client = genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
+def _default_client():
+    return genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
 langfuse = get_client()
 
 N_VOTES = 3
@@ -102,7 +103,7 @@ def _majority_vote(samples: list, flag_key: str) -> dict:
 
 def _vote(prompt: str, flag_key: str, gemini_client=None) -> dict:
     import time
-    _client = gemini_client or client
+    _client = gemini_client or _default_client()
     samples = []
     for _ in range(N_VOTES):
         result = safe_generate(_client, "gemini-2.5-flash-lite", prompt)

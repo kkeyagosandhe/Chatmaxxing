@@ -12,11 +12,12 @@ import pandas as pd
 
 load_dotenv()
 
-client = genai.Client(
-    vertexai=True,
-    project=os.getenv("GOOGLE_CLOUD_PROJECT"),
-    location="us-central1"
-)
+def _default_client():
+    return genai.Client(
+        vertexai=True,
+        project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+        location="us-central1"
+    )
 langfuse = get_client()
 
 
@@ -66,7 +67,7 @@ def format_ticket(row: dict) -> dict:
 
 
 def run_agent(row: dict, prompt_template: str = DEFAULT_PROMPT, use_grounding_gate: bool = False, gemini_client=None) -> dict:
-    _client = gemini_client or client
+    _client = gemini_client or _default_client()
     with langfuse.start_as_current_observation(as_type="span", name="agent-run") as span:
 
         ticket = format_ticket(row)

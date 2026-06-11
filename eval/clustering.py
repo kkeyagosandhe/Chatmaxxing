@@ -10,7 +10,8 @@ import json
 
 load_dotenv()
 
-client = genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
+def _default_client():
+    return genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
 langfuse = get_client()
 
 def cluster_failures(results: list, n_clusters: int = 3, gemini_client=None) -> list:
@@ -75,7 +76,7 @@ Sample failure: {sample}
 Reply with JSON only:
 {{"root_cause": "5 word label", "fix": "one sentence fix"}}"""
 
-            _client = gemini_client or client
+            _client = gemini_client or _default_client()
             response = safe_generate(_client, "gemini-2.5-flash-lite", prompt)
 
             import re

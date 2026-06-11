@@ -9,7 +9,8 @@ import re
 
 load_dotenv()
 
-client = genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
+def _default_client():
+    return genai.Client(vertexai=True, project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="us-central1")
 langfuse = get_client()
 
 
@@ -51,7 +52,7 @@ Your job is to surface uncertainty, not eliminate it.
 
 Return a JSON array of caveat objects, one per cluster, in the same order."""
 
-        _client = gemini_client or client
+        _client = gemini_client or _default_client()
         response = safe_generate(_client, "gemini-2.5-flash-lite", prompt)
 
         text = response.text.strip()
