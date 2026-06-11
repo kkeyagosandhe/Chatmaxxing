@@ -172,6 +172,15 @@ with st.sidebar:
     st.caption("AI Agent Quality & Performance Hub")
     st.divider()
 
+    if st.button("↩ Reset to demo data", use_container_width=True):
+        st.session_state.results = None
+        st.session_state.clusters = None
+        st.session_state.caveats = None
+        st.session_state.selected_ticket = None
+        st.rerun()
+
+    st.divider()
+
     st.subheader("Select ticket range")
     ticket_range = st.slider(
         "Ticket range",
