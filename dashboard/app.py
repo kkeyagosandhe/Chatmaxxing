@@ -32,6 +32,25 @@ def save_cache(results, clusters, caveats):
 st.set_page_config(page_title="AI Agent Quality & Performance Hub", layout="wide")
 
 # ---------------------------------------------------------------------------
+# Page 1 — API key entry
+# ---------------------------------------------------------------------------
+if "gemini_api_key" not in st.session_state:
+    st.session_state.gemini_api_key = None
+
+if st.session_state.gemini_api_key is None:
+    st.title("AI Agent Quality & Performance Hub")
+    st.markdown("Enter your Gemini API key to get started. The key is used only for this session and is never stored or transmitted beyond your browser.")
+    key_input = st.text_input("Gemini API key", type="password", placeholder="AIza…")
+    if st.button("Continue", type="primary", disabled=not key_input):
+        st.session_state.gemini_api_key = key_input
+        st.rerun()
+    st.stop()
+
+# Build the client once per session from the key entered on Page 1.
+from google import genai as _genai
+_gemini_client = _genai.Client(api_key=st.session_state.gemini_api_key)
+
+# ---------------------------------------------------------------------------
 # Session state defaults
 # ---------------------------------------------------------------------------
 if "results" not in st.session_state:
@@ -73,7 +92,7 @@ def caveat_for_ticket(ticket_id, clusters, caveats):
     return None
 
 
-def run_pipeline(start: int, end: int):
+def run_pipeline(start: int, end: int, gemini_client=None):
     from agent.agent import load_tickets, run_agent
     from eval.detectors import run_all_detectors
     from eval.clustering import cluster_failures
@@ -89,7 +108,7 @@ def run_pipeline(start: int, end: int):
 
     for idx, i in enumerate(range(start, end)):
         row = df.iloc[i].to_dict()
-        agent_out = run_agent(row, use_grounding_gate=False)
+        agent_out = run_agent(row, use_grounding_gate=False, gemini_client=gemini_client)
         eval_result = run_all_detectors(
             ticket_id=agent_out["ticket_id"],
             query=agent_out["query"],
@@ -97,6 +116,7 @@ def run_pipeline(start: int, end: int):
             ticket_type=agent_out["ticket_type"],
             context=agent_out["context"],
             disposition=agent_out["disposition"],
+            gemini_client=gemini_client,
         )
         results.append({
             "eval": eval_result,
@@ -111,8 +131,8 @@ def run_pipeline(start: int, end: int):
     progress.empty()
 
     all_evals = [r["eval"] for r in results]
-    clusters = cluster_failures(all_evals)
-    caveats = generate_caveats(clusters) if clusters else []
+    clusters = cluster_failures(all_evals, gemini_client=gemini_client)
+    caveats = generate_caveats(clusters, gemini_client=gemini_client) if clusters else []
 
     return results, clusters, caveats
 
@@ -142,7 +162,7 @@ with st.sidebar:
 
     if st.button("▶ Run analysis", use_container_width=True, type="primary"):
         with st.spinner("Running…"):
-            results, clusters, caveats = run_pipeline(start_idx, end_idx)
+            results, clusters, caveats = run_pipeline(start_idx, end_idx, gemini_client=_gemini_client)
             save_cache(results, clusters, caveats)
             st.session_state.results = results
             st.session_state.clusters = clusters

@@ -100,17 +100,18 @@ def _majority_vote(samples: list, flag_key: str) -> dict:
     }
 
 
-def _vote(prompt: str, flag_key: str) -> dict:
+def _vote(prompt: str, flag_key: str, gemini_client=None) -> dict:
     import time
+    _client = gemini_client or client
     samples = []
     for _ in range(N_VOTES):
-        result = safe_generate(client, "gemini-2.5-flash-lite", prompt)
+        result = safe_generate(_client, "gemini-2.5-flash-lite", prompt)
         samples.append(_parse_json(result.text))
         time.sleep(2)
     return _majority_vote(samples, flag_key)
 
 
-def detect_goal_drift(query: str, response: str) -> dict:
+def detect_goal_drift(query: str, response: str, gemini_client=None) -> dict:
     prompt = f"""You are an evaluator checking if an agent's response addresses the customer's question.
 
 Customer Query: {query}
@@ -127,10 +128,10 @@ A response DRIFTS if:
 
 Apply the rubric above. Reply with JSON only:
 {{"score": 0.0 to 1.0, "reason": "one sentence citing which rubric case applies", "drifted": true or false}}"""
-    return _vote(prompt, "drifted")
+    return _vote(prompt, "drifted", gemini_client)
 
 
-def detect_hallucination(query: str, response: str, context: dict) -> dict:
+def detect_hallucination(query: str, response: str, context: dict, gemini_client=None) -> dict:
     prompt = f"""You are an evaluator checking if a customer support agent hallucinated.
 
 The agent was given this full context:
@@ -155,10 +156,10 @@ Do NOT flag as hallucination:
 
 Apply the rubric above. Reply with JSON only:
 {{"score": 0.0 to 1.0, "reason": "one sentence citing what was hallucinated or why it passed", "hallucinated": true or false}}"""
-    return _vote(prompt, "hallucinated")
+    return _vote(prompt, "hallucinated", gemini_client)
 
 
-def detect_wrong_disposition(response: str, ticket_type: str) -> dict:
+def detect_wrong_disposition(response: str, ticket_type: str, gemini_client=None) -> dict:
     prompt = f"""You are an evaluator checking if the agent chose the correct disposition.
 
 Ticket Type: {ticket_type}
@@ -176,7 +177,7 @@ WRONG disposition examples:
 
 Apply the rubric above. Reply with JSON only:
 {{"score": 0.0 to 1.0, "reason": "one sentence citing which rubric applies", "wrong_disposition": true or false}}"""
-    return _vote(prompt, "wrong_disposition")
+    return _vote(prompt, "wrong_disposition", gemini_client)
 
 
 def run_all_detectors(
@@ -186,12 +187,13 @@ def run_all_detectors(
     ticket_type: str,
     context: dict,
     disposition: str = "UNKNOWN",
+    gemini_client=None,
 ) -> dict:
     with langfuse.start_as_current_observation(as_type="span", name="eval-run") as span:
 
-        goal_drift = detect_goal_drift(query, response)
-        hallucination = detect_hallucination(query, response, context)
-        wrong_disposition = detect_wrong_disposition(response, ticket_type)
+        goal_drift = detect_goal_drift(query, response, gemini_client)
+        hallucination = detect_hallucination(query, response, context, gemini_client)
+        wrong_disposition = detect_wrong_disposition(response, ticket_type, gemini_client)
 
         any_failure = any([
             goal_drift["drifted"],

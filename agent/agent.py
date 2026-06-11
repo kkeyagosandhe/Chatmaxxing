@@ -65,7 +65,8 @@ def format_ticket(row: dict) -> dict:
     }
 
 
-def run_agent(row: dict, prompt_template: str = DEFAULT_PROMPT, use_grounding_gate: bool = False) -> dict:
+def run_agent(row: dict, prompt_template: str = DEFAULT_PROMPT, use_grounding_gate: bool = False, gemini_client=None) -> dict:
+    _client = gemini_client or client
     with langfuse.start_as_current_observation(as_type="span", name="agent-run") as span:
 
         ticket = format_ticket(row)
@@ -77,7 +78,7 @@ def run_agent(row: dict, prompt_template: str = DEFAULT_PROMPT, use_grounding_ga
             description=ticket["description"],
         )
 
-        parsed = safe_generate_structured(client, "gemini-2.5-flash-lite", prompt, AgentResponse)
+        parsed = safe_generate_structured(_client, "gemini-2.5-flash-lite", prompt, AgentResponse)
 
         # Strip any tag the model wrote into the text, keep clean body.
         clean_text = re.sub(r'\[(RESOLVED|ESCALATE|NEED_MORE_INFO)\]', '', parsed.response_text).strip()

@@ -21,7 +21,7 @@ class CaveatAnnotation(BaseModel):
     needs_human_review: bool
 
 
-def generate_caveats(cluster_summaries: list) -> list[CaveatAnnotation]:
+def generate_caveats(cluster_summaries: list, gemini_client=None) -> list[CaveatAnnotation]:
     """
     Takes cluster names + detector results, returns caveat annotations
     instead of prompt patches. Surfaces ambiguity for human review.
@@ -51,7 +51,8 @@ Your job is to surface uncertainty, not eliminate it.
 
 Return a JSON array of caveat objects, one per cluster, in the same order."""
 
-        response = safe_generate(client, "gemini-2.5-flash-lite", prompt)
+        _client = gemini_client or client
+        response = safe_generate(_client, "gemini-2.5-flash-lite", prompt)
 
         text = response.text.strip()
         text = re.sub(r"```json|```", "", text).strip()
